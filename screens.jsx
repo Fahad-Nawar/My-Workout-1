@@ -1,0 +1,410 @@
+// screens.jsx — all app screens (login, dashboard, logger, edit, history, progress)
+
+const { useState, useEffect, useRef, useMemo } = React;
+
+// ────────────────────────── Login / User Picker ──────────────────────────
+function LoginScreen({ users, onLogin, onCreate }) {
+  const [name, setName] = useState('');
+  const [creating, setCreating] = useState(users.length === 0);
+
+  const submit = () => {
+    if (!name.trim()) return;
+    onCreate(name.trim());
+    setName('');
+    setCreating(false);
+  };
+
+  return (
+    <div style={{ height: '100%', display: 'flex', flexDirection: 'column', padding: '32px 24px', justifyContent: 'center' }} className="mw-fade-in">
+      <div style={{ marginBottom: 36, textAlign: 'center' }}>
+        <div style={{ display: 'inline-flex', width: 56, height: 56, borderRadius: 16, background: 'var(--grad)', alignItems: 'center', justifyContent: 'center', marginBottom: 16, boxShadow: '0 8px 24px rgba(99,102,241,.4)' }}>
+          <Icon name="dumbbell" size={28} color="white"/>
+        </div>
+        <div className="mw-eyebrow" style={{ marginBottom: 6 }}>MyWorkout</div>
+        <h1 className="mw-h1 mw-grad-text" style={{ fontSize: 36 }}>Welcome back</h1>
+        <p className="mw-mute" style={{ marginTop: 8, fontSize: 14 }}>Pick a profile to continue your training.</p>
+      </div>
+
+      {!creating && users.length > 0 && (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginBottom: 16 }}>
+          {users.map(u => (
+            <button key={u.id} className="mw-card" onClick={() => onLogin(u.id)}
+              style={{ display: 'flex', alignItems: 'center', gap: 14, textAlign: 'left', padding: 14, borderColor: 'var(--border)', cursor: 'pointer' }}>
+              <div className="mw-avatar-sm" style={{ width: 48, height: 48, fontSize: 18, background: u.color || 'var(--grad)' }}>{u.initials}</div>
+              <div style={{ flex: 1 }}>
+                <div style={{ fontWeight: 600, fontSize: 15 }}>{u.name}</div>
+                <div className="mw-mute" style={{ fontSize: 12 }}>{u.sessionCount || 0} sessions logged</div>
+              </div>
+              <Icon name="chevron-right" size={18} color="var(--text-mute)"/>
+            </button>
+          ))}
+        </div>
+      )}
+
+      {creating ? (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+          <div>
+            <div className="mw-eyebrow" style={{ marginBottom: 8 }}>Your name</div>
+            <input className="mw-input" autoFocus placeholder="e.g. 511" value={name}
+              onChange={e => setName(e.target.value)}
+              onKeyDown={e => e.key === 'Enter' && submit()}/>
+          </div>
+          <button className="mw-btn mw-btn-primary" onClick={submit} disabled={!name.trim()}
+            style={{ opacity: name.trim() ? 1 : 0.5 }}>
+            <Icon name="sparkle" size={16} color="white"/> Create profile
+          </button>
+          {users.length > 0 && (
+            <button className="mw-btn mw-btn-ghost" onClick={() => setCreating(false)}>Back</button>
+          )}
+        </div>
+      ) : (
+        <button className="mw-btn mw-btn-ghost" onClick={() => setCreating(true)}>
+          <Icon name="plus" size={16}/> Add new profile
+        </button>
+      )}
+
+      <div style={{ marginTop: 28, textAlign: 'center', fontSize: 11, color: 'var(--text-mute)', fontFamily: 'var(--mono)' }}>
+        Each profile keeps its own splits & history.
+      </div>
+    </div>
+  );
+}
+
+// ────────────────────────── Dashboard ──────────────────────────
+function Dashboard({ user, splits, history, onPickSplit, onEditSplits, onLogout, onGo, onToggleSplit }) {
+  const allList = SPLIT_ORDER.map(id => splits[id]).filter(Boolean);
+  Object.values(splits).forEach(s => { if (!SPLIT_ORDER.includes(s.id)) allList.push(s); });
+  const splitsList = allList.filter(s => s.added !== false);
+  const availableList = allList.filter(s => s.added === false);
+  const [showPicker, setShowPicker] = useState(false);
+
+  const todaySessions = history.filter(h => h.date === todayStr());
+
+  return (
+    <div className="mw-scroll mw-fade-in" style={{ height: '100%', padding: '12px 16px 100px', overflowY: 'auto' }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 18 }}>
+        <div className="mw-avatar-sm" style={{ background: user.color || 'var(--grad)' }}>{user.initials}</div>
+        <div style={{ flex: 1 }}>
+          <div className="mw-eyebrow">welcome,</div>
+          <div style={{ fontWeight: 700, fontSize: 17 }}>{user.name}</div>
+        </div>
+        <button className="mw-btn mw-btn-icon" onClick={onLogout} aria-label="Switch user">
+          <Icon name="logout" size={16} color="var(--text-dim)"/>
+        </button>
+      </div>
+
+      {/* Stats row */}
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 8, marginBottom: 18 }}>
+        <div className="mw-stat">
+          <div className="mw-stat-num mw-grad-text">{history.length}</div>
+          <div className="mw-stat-lbl">Sessions</div>
+        </div>
+        <div className="mw-stat">
+          <div className="mw-stat-num">{streakOf(history)}</div>
+          <div className="mw-stat-lbl">Streak</div>
+        </div>
+        <div className="mw-stat">
+          <div className="mw-stat-num">{todaySessions.length}</div>
+          <div className="mw-stat-lbl">Today</div>
+        </div>
+      </div>
+
+      <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', marginBottom: 10 }}>
+        <h2 className="mw-h2">Your splits</h2>
+        <div style={{ display: 'flex', gap: 6 }}>
+          <button className="mw-btn mw-btn-sm mw-btn-ghost" onClick={() => setShowPicker(true)}>
+            <Icon name="plus" size={12}/> Add
+          </button>
+          <button className="mw-btn mw-btn-sm mw-btn-ghost" onClick={onEditSplits}>
+            <Icon name="edit" size={12}/> Edit
+          </button>
+        </div>
+      </div>
+
+      <div className="mw-eyebrow" style={{ marginBottom: 8 }}>{splitsList.length === 6 ? 'Recommended · 6-day rotation' : `${splitsList.length} split${splitsList.length===1?'':'s'} active`}</div>
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, marginBottom: 16 }}>
+        {splitsList.map((s) => (
+          <SplitCard key={s.id} split={s} sessions={history.filter(h => h.day === s.id).length}
+            todayDone={todaySessions.some(t => t.day === s.id)}
+            onClick={() => onPickSplit(s.id)} />
+        ))}
+        {splitsList.length === 0 && (
+          <div className="mw-mute" style={{ gridColumn: '1 / -1', textAlign: 'center', padding: 32, fontSize: 13, border: '1px dashed var(--border)', borderRadius: 12 }}>
+            No splits yet — tap <strong>Add</strong> to add one.
+          </div>
+        )}
+      </div>
+
+      {showPicker && (
+        <SplitPicker available={availableList} all={allList}
+          onAdd={(id) => onToggleSplit(id, true)}
+          onRemove={(id) => onToggleSplit(id, false)}
+          onClose={() => setShowPicker(false)}
+          onCreateCustom={() => { setShowPicker(false); onEditSplits(); }}/>
+      )}
+    </div>
+  );
+}
+
+function SplitPicker({ available, all, onAdd, onRemove, onClose, onCreateCustom }) {
+  return (
+    <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,.55)', backdropFilter: 'blur(8px)', zIndex: 50, display: 'flex', flexDirection: 'column' }} onClick={onClose}>
+      <div onClick={e => e.stopPropagation()} style={{ marginTop: 'auto', background: 'var(--surface)', borderTopLeftRadius: 24, borderTopRightRadius: 24, padding: '16px 16px 24px', maxHeight: '88%', display: 'flex', flexDirection: 'column' }}>
+        <div style={{ width: 36, height: 4, borderRadius: 2, background: 'var(--border)', margin: '0 auto 14px' }}/>
+        <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', marginBottom: 4 }}>
+          <h2 className="mw-h2">Add to your workout</h2>
+          <button className="mw-btn mw-btn-icon" onClick={onClose}><Icon name="x" size={14}/></button>
+        </div>
+        <p className="mw-mute" style={{ fontSize: 12, marginBottom: 16 }}>Recommended splits — tap to add. You can always remove them later.</p>
+
+        <div className="mw-eyebrow" style={{ marginBottom: 8 }}>Recommended · {available.length} available</div>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 8, overflowY: 'auto', paddingBottom: 8 }}>
+          {available.length === 0 && (
+            <div className="mw-mute" style={{ fontSize: 12, padding: 14, textAlign: 'center', border: '1px dashed var(--border)', borderRadius: 12 }}>
+              All recommended splits are already in your workout.
+            </div>
+          )}
+          {available.map(s => (
+            <button key={s.id} className="mw-card" onClick={() => onAdd(s.id)}
+              style={{ display: 'flex', alignItems: 'center', gap: 12, padding: 12, textAlign: 'left', cursor: 'pointer' }}>
+              <div style={{ width: 40, height: 40, borderRadius: 10, background: (s.color || '#6366f1') + '22', color: s.color || 'var(--accent)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700, fontFamily: 'var(--mono)' }}>{s.icon || s.name[0]}</div>
+              <div style={{ flex: 1 }}>
+                <div style={{ fontWeight: 600, fontSize: 14 }}>{s.name}</div>
+                <div className="mw-mute" style={{ fontSize: 11 }}>{s.subtitle} · {s.exercises.length} exercises</div>
+              </div>
+              <div style={{ width: 28, height: 28, borderRadius: 8, background: 'var(--accent)', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <Icon name="plus" size={14} color="white"/>
+              </div>
+            </button>
+          ))}
+
+          <div className="mw-eyebrow" style={{ marginTop: 8, marginBottom: 4 }}>In your workout</div>
+          {all.filter(s => s.added !== false).map(s => (
+            <div key={s.id} className="mw-card" style={{ display: 'flex', alignItems: 'center', gap: 12, padding: 12 }}>
+              <div style={{ width: 40, height: 40, borderRadius: 10, background: (s.color || '#6366f1') + '22', color: s.color || 'var(--accent)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700, fontFamily: 'var(--mono)' }}>{s.icon || s.name[0]}</div>
+              <div style={{ flex: 1 }}>
+                <div style={{ fontWeight: 600, fontSize: 14 }}>{s.name}</div>
+                <div className="mw-mute" style={{ fontSize: 11 }}>{s.exercises.length} exercises</div>
+              </div>
+              <button className="mw-btn mw-btn-sm mw-btn-ghost" onClick={() => onRemove(s.id)}>Remove</button>
+            </div>
+          ))}
+        </div>
+
+        <button className="mw-btn mw-btn-ghost" onClick={onCreateCustom} style={{ marginTop: 8 }}>
+          <Icon name="sparkle" size={14}/> Create a custom split
+        </button>
+      </div>
+    </div>
+  );
+}
+
+
+
+function SplitCard({ split, sessions, todayDone, onClick }) {
+  return (
+    <div className={`mw-splitcard ${split.recommended ? 'recommended' : ''}`} onClick={onClick}>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
+        <div style={{
+          width: 32, height: 32, borderRadius: 10,
+          background: split.color ? split.color + '22' : 'var(--accent-soft)',
+          color: split.color || 'var(--accent)',
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          fontWeight: 700, fontSize: 14, fontFamily: 'var(--mono)',
+        }}>{split.icon || split.name[0]}</div>
+        {todayDone && <span className="mw-dot" title="Today done"/>}
+      </div>
+      <div style={{ fontWeight: 700, fontSize: 15, marginBottom: 2 }}>{split.name}</div>
+      <div className="mw-mute" style={{ fontSize: 11, marginBottom: 10 }}>{split.subtitle || `${split.exercises.length} exercises`}</div>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+        <span className="mw-pill">{split.exercises.length} ex</span>
+        <span className="mw-mute" style={{ fontSize: 11, fontFamily: 'var(--mono)' }}>{sessions} logged</span>
+      </div>
+    </div>
+  );
+}
+
+function streakOf(history) {
+  if (!history.length) return 0;
+  const dates = new Set(history.map(h => h.date));
+  let streak = 0;
+  const d = new Date();
+  for (let i = 0; i < 60; i++) {
+    const ds = d.toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' });
+    if (dates.has(ds)) { streak++; d.setDate(d.getDate() - 1); }
+    else if (i === 0) { d.setDate(d.getDate() - 1); }
+    else break;
+  }
+  return streak;
+}
+
+// ────────────────────────── Logger ──────────────────────────
+function Logger({ split, history, onBack, onSave, onEditSplit }) {
+  // state[exerciseName] = [{weight, reps}, ...]
+  const todaySession = history.find(h => h.date === todayStr() && h.day === split.id);
+
+  const [state, setState] = useState(() => {
+    const init = {};
+    split.exercises.forEach(name => {
+      const existing = todaySession?.exercises.find(e => e.name === name);
+      init[name] = existing?.sets?.length ? existing.sets : [{ weight: '', reps: '' }];
+    });
+    return init;
+  });
+
+  const [expanded, setExpanded] = useState(split.exercises[0] || null);
+  const [saving, setSaving] = useState(false);
+  const [toast, setToast] = useState(null);
+
+  const updateSet = (ex, i, field, value) => {
+    setState(s => ({
+      ...s,
+      [ex]: s[ex].map((set, idx) => idx === i ? { ...set, [field]: value } : set),
+    }));
+  };
+  const addSet = (ex) => setState(s => ({ ...s, [ex]: [...(s[ex] || []), { weight: '', reps: '' }] }));
+  const removeSet = (ex, i) => setState(s => ({ ...s, [ex]: s[ex].filter((_, idx) => idx !== i) }));
+  const bumpWeight = (ex, i, delta) => {
+    setState(s => ({
+      ...s,
+      [ex]: s[ex].map((set, idx) => {
+        if (idx !== i) return set;
+        const cur = parseFloat(set.weight) || 0;
+        const next = Math.max(0, cur + delta);
+        return { ...set, weight: String(next % 1 === 0 ? next : next.toFixed(1)) };
+      }),
+    }));
+  };
+
+  const handleSave = () => {
+    setSaving(true);
+    const exercises = split.exercises
+      .map(name => ({ name, sets: (state[name] || []).filter(s => s.weight || s.reps) }))
+      .filter(e => e.sets.length);
+    if (!exercises.length) {
+      setToast({ msg: 'Fill at least one set first', color: 'var(--danger)' });
+      setSaving(false);
+      setTimeout(() => setToast(null), 2200);
+      return;
+    }
+    setTimeout(() => {
+      onSave(exercises);
+      setSaving(false);
+      setToast({ msg: 'Session saved ✓', color: 'var(--success)' });
+      setTimeout(() => setToast(null), 1800);
+    }, 500);
+  };
+
+  const filledCount = Object.values(state).filter(sets => sets.some(s => s.weight || s.reps)).length;
+
+  return (
+    <div className="mw-fade-in" style={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
+      <div style={{ padding: '12px 16px', display: 'flex', alignItems: 'center', gap: 10, borderBottom: '1px solid var(--border)' }}>
+        <button className="mw-btn mw-btn-icon" onClick={onBack}><Icon name="arrow-left" size={16}/></button>
+        <div style={{ flex: 1 }}>
+          <div className="mw-eyebrow">{todayStr()}</div>
+          <div style={{ fontWeight: 700, fontSize: 16 }}>{split.name} <span className="mw-mute" style={{ fontSize: 12, fontWeight: 400 }}>· {filledCount}/{split.exercises.length}</span></div>
+        </div>
+        <button className="mw-btn mw-btn-icon" onClick={onEditSplit} title="Edit split">
+          <Icon name="edit" size={14} color="var(--text-dim)"/>
+        </button>
+      </div>
+
+      {todaySession && (
+        <div style={{ padding: '10px 16px 0' }}>
+          <div className="mw-resume">
+            <Icon name="play" size={12}/> Resuming today's session — your sets are loaded.
+          </div>
+        </div>
+      )}
+
+      <div className="mw-scroll" style={{ flex: 1, padding: '12px 16px 80px' }}>
+        {split.exercises.map((ex, idx) => (
+          <ExerciseCard key={ex} name={ex} index={idx} sets={state[ex] || []}
+            expanded={expanded === ex}
+            onToggle={() => setExpanded(expanded === ex ? null : ex)}
+            onUpdate={(i, f, v) => updateSet(ex, i, f, v)}
+            onAdd={() => addSet(ex)}
+            onRemove={(i) => removeSet(ex, i)}
+            onBump={(i, d) => bumpWeight(ex, i, d)}
+            lastSet={lastSetOf(history, ex)}
+          />
+        ))}
+      </div>
+
+      <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, padding: 12, background: 'linear-gradient(to top, var(--bg) 60%, transparent)' }}>
+        <button className="mw-btn mw-btn-primary" onClick={handleSave} disabled={saving}
+          style={{ width: '100%', height: 50, fontSize: 15 }}>
+          {saving ? <div className="mw-spinner"/> : <><Icon name="check" size={16} color="white"/> Save session</>}
+        </button>
+      </div>
+
+      {toast && <div className="mw-toast" style={{ borderColor: toast.color, color: toast.color }}>{toast.msg}</div>}
+    </div>
+  );
+}
+
+function lastSetOf(history, exName) {
+  for (const sess of history) {
+    const ex = sess.exercises?.find(e => e.name === exName);
+    if (ex?.sets?.length) {
+      const best = ex.sets.reduce((a, b) => (parseFloat(b.weight) || 0) > (parseFloat(a.weight) || 0) ? b : a);
+      return { date: sess.date, ...best };
+    }
+  }
+  return null;
+}
+
+function ExerciseCard({ name, index, sets, expanded, onToggle, onUpdate, onAdd, onRemove, onBump, lastSet }) {
+  const filled = sets.filter(s => s.weight || s.reps).length;
+  return (
+    <div className="mw-card" style={{ marginBottom: 8, padding: 0, overflow: 'hidden' }}>
+      <button onClick={onToggle} style={{ width: '100%', padding: '12px 14px', display: 'flex', alignItems: 'center', gap: 10, textAlign: 'left' }}>
+        <div className="mw-mono" style={{ width: 22, height: 22, borderRadius: 6, background: 'var(--surface-2)', color: 'var(--text-mute)', fontSize: 11, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>{String(index + 1).padStart(2, '0')}</div>
+        <div style={{ flex: 1 }}>
+          <div style={{ fontWeight: 600, fontSize: 14 }}>{name}</div>
+          {lastSet && !expanded && <div className="mw-mute" style={{ fontSize: 11, marginTop: 1 }}>last: {lastSet.weight}kg × {lastSet.reps}</div>}
+        </div>
+        {filled > 0 && <span className="mw-chip">{filled} set{filled > 1 ? 's' : ''}</span>}
+        <Icon name="chevron-down" size={14} color="var(--text-mute)"
+          style={{ transform: expanded ? 'rotate(180deg)' : 'none', transition: 'transform .2s' }}/>
+      </button>
+      {expanded && (
+        <div style={{ padding: '0 14px 14px' }}>
+          <div className="mw-eyebrow" style={{ display: 'grid', gridTemplateColumns: '28px 1fr 1fr 36px', gap: 8, marginBottom: 4 }}>
+            <span>#</span><span>Weight (kg)</span><span>Reps</span><span/>
+          </div>
+          {sets.map((set, i) => (
+            <div key={i}>
+              <div className="mw-set-row">
+                <div className="mw-mono mw-mute" style={{ fontSize: 12, textAlign: 'center' }}>{i + 1}</div>
+                <input className="mw-input" inputMode="decimal" placeholder="0" value={set.weight}
+                  onChange={e => onUpdate(i, 'weight', e.target.value)} style={{ direction: 'ltr', textAlign: 'center', fontFamily: 'var(--mono)' }}/>
+                <input className="mw-input" inputMode="numeric" placeholder="0" value={set.reps}
+                  onChange={e => onUpdate(i, 'reps', e.target.value)} style={{ direction: 'ltr', textAlign: 'center', fontFamily: 'var(--mono)' }}/>
+                <button className="mw-btn mw-btn-icon" onClick={() => onRemove(i)} disabled={sets.length === 1}
+                  style={{ height: 40, width: 36, opacity: sets.length === 1 ? 0.3 : 1 }}>
+                  <Icon name="x" size={14} color="var(--text-mute)"/>
+                </button>
+              </div>
+              <div className="mw-quick">
+                <button onClick={() => onBump(i, 2.5)}>+2.5</button>
+                <button onClick={() => onBump(i, 5)}>+5</button>
+                <button onClick={() => onBump(i, -2.5)}>−2.5</button>
+                <button onClick={() => onBump(i, -5)}>−5</button>
+              </div>
+            </div>
+          ))}
+          <button className="mw-btn mw-btn-ghost mw-btn-sm" onClick={onAdd} style={{ width: '100%', marginTop: 8 }}>
+            <Icon name="plus" size={12}/> Add set
+          </button>
+        </div>
+      )}
+    </div>
+  );
+}
+
+window.LoginScreen = LoginScreen;
+window.Dashboard = Dashboard;
+window.Logger = Logger;
+window.SplitPicker = SplitPicker;
