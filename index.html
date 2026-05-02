@@ -3,13 +3,13 @@
 <head>
   <meta charset="utf-8"/>
   <title>MyWorkout — Interactive Prototype</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
   <link rel="preconnect" href="https://fonts.googleapis.com"/>
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet"/>
   <link rel="stylesheet" href="styles.css"/>
   <style>
-    html, body { margin: 0; height: 100%; background: #f0eee9; overflow: hidden; font-family: 'Inter', system-ui, sans-serif; }
+    html, body { margin: 0; height: 100%; background: #0a0a0c; overflow: hidden; font-family: 'Inter', system-ui, sans-serif; }
     #root { height: 100%; }
   </style>
 </head>
@@ -30,66 +30,30 @@
   <script type="text/babel" src="app.jsx"></script>
 
   <script type="text/babel">
-    const TWEAK_DEFAULTS = /*EDITMODE-BEGIN*/{
-      "theme": "slate",
-      "density": "comfy",
-      "view": "both",
-      "seedName": "511"
-    }/*EDITMODE-END*/;
+    const { useState: useS, useEffect: useE } = React;
 
     function Root() {
-      const [tweaks, setTweak] = useTweaks(TWEAK_DEFAULTS);
-      const themeMap = { midnight: 'midnight', slate: 'slate', ember: 'ember', light: 'light' };
-      const theme = themeMap[tweaks.theme] || 'midnight';
+      const [isMobile, setIsMobile] = useS(() => window.matchMedia('(max-width: 767px)').matches);
+
+      useE(() => {
+        const mq = window.matchMedia('(max-width: 767px)');
+        const handler = (e) => setIsMobile(e.matches);
+        mq.addEventListener('change', handler);
+        return () => mq.removeEventListener('change', handler);
+      }, []);
+
+      if (isMobile) {
+        return (
+          <div style={{ height: '100%' }}>
+            <MobileApp initialName="" theme="slate" density="comfy"/>
+          </div>
+        );
+      }
 
       return (
-        <>
-          <DesignCanvas>
-            <DCSection id="prototype" title="MyWorkout" subtitle="Multi-user workout tracker · 6-split rotation · mobile + desktop">
-
-              {(tweaks.view === 'both' || tweaks.view === 'mobile') && (
-                <DCArtboard id="mobile-app" label="Mobile · Full Prototype" width={402} height={874}>
-                  <IOSDevice width={402} height={874} dark>
-                    <div style={{ height: '100%', background: 'var(--bg, #0a0a0c)', paddingTop: 54, paddingBottom: 24, boxSizing: 'border-box' }}>
-                      <MobileApp initialName={tweaks.seedName} theme={theme} density={tweaks.density}/>
-                    </div>
-                  </IOSDevice>
-                </DCArtboard>
-              )}
-
-              {(tweaks.view === 'both' || tweaks.view === 'desktop') && (
-                <DCArtboard id="desktop-app" label="Desktop · Full Prototype" width={1280} height={820}>
-                  <div style={{ height: '100%', background: 'var(--bg, #0a0a0c)', borderRadius: 12, overflow: 'hidden' }}>
-                    <DesktopApp initialName={tweaks.seedName} theme={theme} density={tweaks.density}/>
-                  </div>
-                </DCArtboard>
-              )}
-
-            </DCSection>
-          </DesignCanvas>
-
-          <TweaksPanel title="Tweaks">
-            <TweakSection title="Theme">
-              <TweakRadio label="Visual style" value={tweaks.theme} onChange={v => setTweak('theme', v)}
-                options={[{value:'midnight', label:'Midnight'}, {value:'slate', label:'Slate'}, {value:'ember', label:'Ember'}, {value:'light', label:'Light'}]}/>
-              <TweakRadio label="Density" value={tweaks.density} onChange={v => setTweak('density', v)}
-                options={[{value:'comfy', label:'Comfy'}, {value:'compact', label:'Compact'}]}/>
-            </TweakSection>
-            <TweakSection title="Layout">
-              <TweakRadio label="Show" value={tweaks.view} onChange={v => setTweak('view', v)}
-                options={[{value:'both', label:'Both'}, {value:'mobile', label:'Mobile'}, {value:'desktop', label:'Desktop'}]}/>
-            </TweakSection>
-            <TweakSection title="Demo">
-              <TweakText label="Seed user name" value={tweaks.seedName} onChange={v => setTweak('seedName', v)}/>
-              <TweakButton label="Reset all data" onClick={() => {
-                if (confirm('Wipe all users, splits and history?')) {
-                  Object.keys(localStorage).filter(k => k.startsWith('mw_')).forEach(k => localStorage.removeItem(k));
-                  location.reload();
-                }
-              }}/>
-            </TweakSection>
-          </TweaksPanel>
-        </>
+        <div style={{ height: '100%' }}>
+          <DesktopApp initialName="" theme="slate" density="comfy"/>
+        </div>
       );
     }
 
