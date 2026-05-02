@@ -2,69 +2,77 @@
 
 const { useState, useEffect, useRef, useMemo } = React;
 
-// ────────────────────────── Login / User Picker ──────────────────────────
-function LoginScreen({ users, onLogin, onCreate }) {
+// ────────────────────────── Login / Sign Up ──────────────────────────
+function LoginScreen({ onLogin, onSignUp }) {
+  const [mode, setMode] = useState('login');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
   const [name, setName] = useState('');
-  const [creating, setCreating] = useState(users.length === 0);
+  const [error, setError] = useState('');
+  const [info, setInfo] = useState('');
+  const [busy, setBusy] = useState(false);
 
-  const submit = () => {
-    if (!name.trim()) return;
-    onCreate(name.trim());
-    setName('');
-    setCreating(false);
+  const submit = async () => {
+    setError(''); setInfo('');
+    if (!email.trim() || !password) return;
+    if (mode === 'signup' && !name.trim()) return;
+    setBusy(true);
+    try {
+      if (mode === 'signup') {
+        const { needsConfirmation } = await onSignUp(email.trim(), password, name.trim());
+        if (needsConfirmation) setInfo('Check your email to confirm your account, then sign in.');
+      } else {
+        await onLogin(email.trim(), password);
+      }
+    } catch (e) {
+      setError(e.message);
+    } finally {
+      setBusy(false);
+    }
   };
+
+  const switchMode = () => { setMode(m => m === 'login' ? 'signup' : 'login'); setError(''); setInfo(''); };
 
   return (
     <div style={{ height: '100%', display: 'flex', flexDirection: 'column', padding: '32px 24px', justifyContent: 'center' }} className="mw-fade-in">
-      <div style={{ marginBottom: 36, textAlign: 'center' }}>
+      <div style={{ marginBottom: 32, textAlign: 'center' }}>
         <div style={{ display: 'inline-flex', width: 56, height: 56, borderRadius: 16, background: 'var(--grad)', alignItems: 'center', justifyContent: 'center', marginBottom: 16, boxShadow: '0 8px 24px rgba(99,102,241,.4)' }}>
           <Icon name="dumbbell" size={28} color="white"/>
         </div>
         <div className="mw-eyebrow" style={{ marginBottom: 6 }}>MyWorkout</div>
-        <h1 className="mw-h1 mw-grad-text" style={{ fontSize: 36 }}>Welcome back</h1>
-        <p className="mw-mute" style={{ marginTop: 8, fontSize: 14 }}>Pick a profile to continue your training.</p>
+        <h1 className="mw-h1 mw-grad-text" style={{ fontSize: 32 }}>{mode === 'login' ? 'Welcome back' : 'Create account'}</h1>
       </div>
 
-      {!creating && users.length > 0 && (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginBottom: 16 }}>
-          {users.map(u => (
-            <button key={u.id} className="mw-card" onClick={() => onLogin(u.id)}
-              style={{ display: 'flex', alignItems: 'center', gap: 14, textAlign: 'left', padding: 14, borderColor: 'var(--border)', cursor: 'pointer' }}>
-              <div className="mw-avatar-sm" style={{ width: 48, height: 48, fontSize: 18, background: u.color || 'var(--grad)' }}>{u.initials}</div>
-              <div style={{ flex: 1 }}>
-                <div style={{ fontWeight: 600, fontSize: 15 }}>{u.name}</div>
-                <div className="mw-mute" style={{ fontSize: 12 }}>{u.sessionCount || 0} sessions logged</div>
-              </div>
-              <Icon name="chevron-right" size={18} color="var(--text-mute)"/>
-            </button>
-          ))}
-        </div>
-      )}
-
-      {creating ? (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+        {mode === 'signup' && (
           <div>
-            <div className="mw-eyebrow" style={{ marginBottom: 8 }}>Your name</div>
-            <input className="mw-input" autoFocus placeholder="e.g. 511" value={name}
-              onChange={e => setName(e.target.value)}
-              onKeyDown={e => e.key === 'Enter' && submit()}/>
+            <div className="mw-eyebrow" style={{ marginBottom: 6 }}>Your name</div>
+            <input className="mw-input" placeholder="e.g. Fahad" value={name} onChange={e => setName(e.target.value)}/>
           </div>
-          <button className="mw-btn mw-btn-primary" onClick={submit} disabled={!name.trim()}
-            style={{ opacity: name.trim() ? 1 : 0.5 }}>
-            <Icon name="sparkle" size={16} color="white"/> Create profile
-          </button>
-          {users.length > 0 && (
-            <button className="mw-btn mw-btn-ghost" onClick={() => setCreating(false)}>Back</button>
-          )}
+        )}
+        <div>
+          <div className="mw-eyebrow" style={{ marginBottom: 6 }}>Email</div>
+          <input className="mw-input" type="email" placeholder="you@example.com" value={email}
+            onChange={e => setEmail(e.target.value)}/>
         </div>
-      ) : (
-        <button className="mw-btn mw-btn-ghost" onClick={() => setCreating(true)}>
-          <Icon name="plus" size={16}/> Add new profile
+        <div>
+          <div className="mw-eyebrow" style={{ marginBottom: 6 }}>Password</div>
+          <input className="mw-input" type="password" placeholder="••••••••" value={password}
+            onChange={e => setPassword(e.target.value)}
+            onKeyDown={e => e.key === 'Enter' && submit()}/>
+        </div>
+        {error && (
+          <div style={{ color: '#ef4444', fontSize: 13, padding: '8px 12px', background: '#ef444420', borderRadius: 8 }}>{error}</div>
+        )}
+        {info && (
+          <div style={{ color: 'var(--accent)', fontSize: 13, padding: '8px 12px', background: '#6366f120', borderRadius: 8 }}>{info}</div>
+        )}
+        <button className="mw-btn mw-btn-primary" onClick={submit} disabled={busy} style={{ opacity: busy ? 0.6 : 1, marginTop: 4 }}>
+          {busy ? <div className="mw-spinner"/> : mode === 'login' ? 'Sign in' : 'Create account'}
         </button>
-      )}
-
-      <div style={{ marginTop: 28, textAlign: 'center', fontSize: 11, color: 'var(--text-mute)', fontFamily: 'var(--mono)' }}>
-        Each profile keeps its own splits & history.
+        <button className="mw-btn mw-btn-ghost" onClick={switchMode}>
+          {mode === 'login' ? "Don't have an account? Sign up" : 'Already have an account? Sign in'}
+        </button>
       </div>
     </div>
   );

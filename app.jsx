@@ -13,50 +13,42 @@ function initialsOf(name) {
   return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
 }
 
-function useAppState(seedUserName) {
-  const [users, setUsers] = useS(() => loadUsers() || []);
-  const [activeId, setActiveId] = useS(() => loadActiveUserId());
+function useAppState() {
+  const [authUser, setAuthUser] = useS(null);
+  const [loading, setLoading] = useS(true);
+  const [name, setName] = useS('');
   const [splits, setSplits] = useS({});
   const [history, setHistory] = useS([]);
 
-  // Hydrate per-user data
   useE(() => {
-    if (!activeId) return;
-    const data = loadUserData(activeId);
-    setSplits(data.splits || defaultUserSplits());
-    setHistory(data.history || []);
-  }, [activeId]);
-
-  // Auto-create seed user once on first run
-  useE(() => {
-    if (users.length === 0 && seedUserName) {
-      createUser(seedUserName);
-    }
-    // eslint-disable-next-line
+    sb.auth.getSession().then(({ data: { session } }) => {
+      if (!session) setLoading(false);
+    });
+    const { data: { subscription } } = sb.auth.onAuthStateChange((_event, session) => {
+      const user = session?.user ?? null;
+      setAuthUser(user);
+      if (!user) { setSplits({}); setHistory([]); setLoading(false); }
+    });
+    return () => subscription.unsubscribe();
   }, []);
 
-  const persistUsers = (next) => { setUsers(next); saveUsers(next); };
-
-  const createUser = (name) => {
-    const id = 'u_' + Date.now();
-    const u = { id, name, initials: initialsOf(name), color: colorFromName(name), sessionCount: 0 };
-    const next = [...users, u]; persistUsers(next);
-    saveUserSplits(id, defaultUserSplits());
-    saveUserHistory(id, []);
-    setActiveId(id); saveActiveUserId(id);
-    return u;
-  };
-
-  const login = (id) => { setActiveId(id); saveActiveUserId(id); };
-  const logout = () => { setActiveId(null); saveActiveUserId(null); };
+  useE(() => {
+    if (!authUser) return;
+    setLoading(true);
+    fetchUserData(authUser.id).then(d => {
+      setName(d.name);
+      setSplits(d.splits || defaultUserSplits());
+      setHistory(d.history || []);
+      setLoading(false);
+    });
+  }, [authUser?.id]);
 
   const updateSplits = (next) => {
     setSplits(next);
-    if (activeId) saveUserSplits(activeId, next);
+    if (authUser) pushUserSplits(authUser.id, next);
   };
 
   const saveSession = (splitId, exercises) => {
-    if (!activeId) return;
     const dateStr = todayStr();
     const existing = history.find(h => h.date === dateStr && h.day === splitId);
     let next;
@@ -70,40 +62,52 @@ function useAppState(seedUserName) {
       next = [{ id: makeId(), date: dateStr, day: splitId, exercises }, ...history];
     }
     setHistory(next);
-    saveUserHistory(activeId, next);
-    // bump session count
-    const newUsers = users.map(u => u.id === activeId ? { ...u, sessionCount: next.length } : u);
-    persistUsers(newUsers);
+    if (authUser) pushUserHistory(authUser.id, next);
   };
 
   const deleteSession = (id) => {
     const next = history.filter(h => h.id !== id);
     setHistory(next);
-    if (activeId) saveUserHistory(activeId, next);
+    if (authUser) pushUserHistory(authUser.id, next);
   };
 
   const toggleSplit = (id, added) => {
-    const next = { ...splits, [id]: { ...splits[id], added } };
-    updateSplits(next);
+    updateSplits({ ...splits, [id]: { ...splits[id], added } });
   };
 
-  const activeUser = users.find(u => u.id === activeId);
-  return { users, activeUser, splits, history, createUser, login, logout, updateSplits, saveSession, deleteSession, toggleSplit };
+  const activeUser = authUser ? {
+    id: authUser.id, name,
+    initials: initialsOf(name), color: colorFromName(name),
+    sessionCount: history.length,
+  } : null;
+
+  return {
+    loading, activeUser, splits, history,
+    login: authSignIn, signup: authSignUp, logout: authSignOut,
+    updateSplits, saveSession, deleteSession, toggleSplit,
+  };
 }
 
 // ─────────── Mobile Shell ───────────
-function MobileApp({ initialName, theme, density, accentHue }) {
-  const app = useAppState(initialName);
+function MobileApp({ theme, density, accentHue }) {
+  const app = useAppState();
   const [route, setRoute] = useS({ name: 'dashboard' });
 
   useE(() => { if (!app.activeUser) setRoute({ name: 'login' }); else if (route.name === 'login') setRoute({ name: 'dashboard' }); }, [app.activeUser]);
 
   const themeStyle = useM(() => ({ '--accent-hue': accentHue }), [accentHue]);
 
+  if (app.loading) {
+    return (
+      <div className="mw-root" data-theme={theme} data-density={density} style={{ height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <div className="mw-spinner" style={{ width: 32, height: 32 }}/>
+      </div>
+    );
+  }
   if (!app.activeUser) {
     return (
       <div className="mw-root" data-theme={theme} data-density={density} style={{ height: '100%', ...themeStyle }}>
-        <LoginScreen users={app.users} onLogin={app.login} onCreate={app.createUser}/>
+        <LoginScreen onLogin={app.login} onSignUp={app.signup}/>
       </div>
     );
   }
@@ -153,18 +157,25 @@ function MobileApp({ initialName, theme, density, accentHue }) {
 }
 
 // ─────────── Desktop Shell ───────────
-function DesktopApp({ initialName, theme, density }) {
-  const app = useAppState(initialName);
+function DesktopApp({ theme, density }) {
+  const app = useAppState();
   const [route, setRoute] = useS({ name: 'dashboard' });
   const [editorSplit, setEditorSplit] = useS(null);
 
   useE(() => { if (!app.activeUser) setRoute({ name: 'login' }); else if (route.name === 'login') setRoute({ name: 'dashboard' }); }, [app.activeUser]);
 
+  if (app.loading) {
+    return (
+      <div className="mw-root" data-theme={theme} data-density={density} style={{ height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <div className="mw-spinner" style={{ width: 40, height: 40 }}/>
+      </div>
+    );
+  }
   if (!app.activeUser) {
     return (
       <div className="mw-root" data-theme={theme} data-density={density} style={{ height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
         <div style={{ width: 420, background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 24, overflow: 'hidden' }}>
-          <LoginScreen users={app.users} onLogin={app.login} onCreate={app.createUser}/>
+          <LoginScreen onLogin={app.login} onSignUp={app.signup}/>
         </div>
       </div>
     );
