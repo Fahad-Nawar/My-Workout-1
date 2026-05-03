@@ -49,23 +49,28 @@ const EXERCISE_POOL = [
 ];
 
 // ────────────────────────── auth ──────────────────────────
-async function authSignUp(email, password, name) {
+function usernameToEmail(username) {
+  return username.toLowerCase().replace(/[^a-z0-9]/g, '_') + '@myworkout.app';
+}
+
+async function authSignUp(username, password) {
+  const email = usernameToEmail(username);
   const { data, error } = await sb.auth.signUp({
     email, password,
-    options: { data: { name } },
+    options: { data: { name: username } },
   });
   if (error) throw error;
   if (data.session) {
     await sb.from('user_data').insert({
-      user_id: data.user.id, name,
+      user_id: data.user.id, name: username,
       splits: defaultUserSplits(), history: [],
     });
-    return { needsConfirmation: false };
   }
-  return { needsConfirmation: true };
+  return data.user;
 }
 
-async function authSignIn(email, password) {
+async function authSignIn(username, password) {
+  const email = usernameToEmail(username);
   const { data, error } = await sb.auth.signInWithPassword({ email, password });
   if (error) throw error;
   return data.user;

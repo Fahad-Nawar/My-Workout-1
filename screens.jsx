@@ -5,33 +5,29 @@ const { useState, useEffect, useRef, useMemo } = React;
 // ────────────────────────── Login / Sign Up ──────────────────────────
 function LoginScreen({ onLogin, onSignUp }) {
   const [mode, setMode] = useState('login');
-  const [email, setEmail] = useState('');
+  const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
-  const [name, setName] = useState('');
   const [error, setError] = useState('');
-  const [info, setInfo] = useState('');
   const [busy, setBusy] = useState(false);
 
   const submit = async () => {
-    setError(''); setInfo('');
-    if (!email.trim() || !password) return;
-    if (mode === 'signup' && !name.trim()) return;
+    setError('');
+    if (!username.trim() || !password) return;
     setBusy(true);
     try {
       if (mode === 'signup') {
-        const { needsConfirmation } = await onSignUp(email.trim(), password, name.trim());
-        if (needsConfirmation) setInfo('Check your email to confirm your account, then sign in.');
+        await onSignUp(username.trim(), password);
       } else {
-        await onLogin(email.trim(), password);
+        await onLogin(username.trim(), password);
       }
     } catch (e) {
-      setError(e.message);
+      setError(e.message.includes('Invalid') ? 'Wrong username or password' : e.message);
     } finally {
       setBusy(false);
     }
   };
 
-  const switchMode = () => { setMode(m => m === 'login' ? 'signup' : 'login'); setError(''); setInfo(''); };
+  const switchMode = () => { setMode(m => m === 'login' ? 'signup' : 'login'); setError(''); };
 
   return (
     <div style={{ height: '100%', display: 'flex', flexDirection: 'column', padding: '32px 24px', justifyContent: 'center' }} className="mw-fade-in">
@@ -44,16 +40,10 @@ function LoginScreen({ onLogin, onSignUp }) {
       </div>
 
       <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-        {mode === 'signup' && (
-          <div>
-            <div className="mw-eyebrow" style={{ marginBottom: 6 }}>Your name</div>
-            <input className="mw-input" placeholder="e.g. Fahad" value={name} onChange={e => setName(e.target.value)}/>
-          </div>
-        )}
         <div>
-          <div className="mw-eyebrow" style={{ marginBottom: 6 }}>Email</div>
-          <input className="mw-input" type="email" placeholder="you@example.com" value={email}
-            onChange={e => setEmail(e.target.value)}/>
+          <div className="mw-eyebrow" style={{ marginBottom: 6 }}>Username</div>
+          <input className="mw-input" placeholder="e.g. Fahad" value={username}
+            onChange={e => setUsername(e.target.value)}/>
         </div>
         <div>
           <div className="mw-eyebrow" style={{ marginBottom: 6 }}>Password</div>
@@ -61,17 +51,17 @@ function LoginScreen({ onLogin, onSignUp }) {
             onChange={e => setPassword(e.target.value)}
             onKeyDown={e => e.key === 'Enter' && submit()}/>
         </div>
+        {mode === 'signup' && (
+          <div style={{ fontSize: 12, color: 'var(--text-mute)', paddingLeft: 4 }}>Password must be at least 6 characters</div>
+        )}
         {error && (
           <div style={{ color: '#ef4444', fontSize: 13, padding: '8px 12px', background: '#ef444420', borderRadius: 8 }}>{error}</div>
-        )}
-        {info && (
-          <div style={{ color: 'var(--accent)', fontSize: 13, padding: '8px 12px', background: '#6366f120', borderRadius: 8 }}>{info}</div>
         )}
         <button className="mw-btn mw-btn-primary" onClick={submit} disabled={busy} style={{ opacity: busy ? 0.6 : 1, marginTop: 4 }}>
           {busy ? <div className="mw-spinner"/> : mode === 'login' ? 'Sign in' : 'Create account'}
         </button>
         <button className="mw-btn mw-btn-ghost" onClick={switchMode}>
-          {mode === 'login' ? "Don't have an account? Sign up" : 'Already have an account? Sign in'}
+          {mode === 'login' ? "New here? Create account" : 'Already have an account? Sign in'}
         </button>
       </div>
     </div>
