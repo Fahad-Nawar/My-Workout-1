@@ -8,7 +8,8 @@ function colorFromName(name) {
   return palette[Math.abs(h) % palette.length];
 }
 function initialsOf(name) {
-  const parts = name.trim().split(/\s+/).filter(Boolean);
+  const parts = (name || '').trim().split(/\s+/).filter(Boolean);
+  if (!parts.length) return '?';
   if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase();
   return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
 }
@@ -75,7 +76,7 @@ function useAppState() {
     updateSplits({ ...splits, [id]: { ...splits[id], added } });
   };
 
-  const activeUser = authUser ? {
+  const activeUser = (authUser && name) ? {
     id: authUser.id, name,
     initials: initialsOf(name), color: colorFromName(name),
     sessionCount: history.length,
