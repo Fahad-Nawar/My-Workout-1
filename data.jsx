@@ -134,11 +134,13 @@ function initialsOf(name) {
 // ────────────────────────── social ──────────────────────────
 async function searchUsers(query) {
   const { data } = await sb.from('user_data')
-    .select('user_id, name')
+    .select('user_id, name, avatar_url')
     .ilike('name', `%${query}%`)
     .limit(10);
   const { data: { user } } = await sb.auth.getUser();
-  return (data || []).filter(u => u.user_id !== user?.id);
+  return (data || [])
+    .filter(u => u.user_id !== user?.id)
+    .map(u => ({ ...u, avatarUrl: u.avatar_url || '' }));
 }
 
 async function fetchFriendships(userId) {
@@ -171,10 +173,11 @@ async function removeFriend(friendshipId) {
 
 async function fetchFriendData(friendId) {
   const { data } = await sb.from('user_data')
-    .select('name, history, splits')
+    .select('name, history, splits, avatar_url')
     .eq('user_id', friendId)
     .single();
-  return data;
+  if (!data) return null;
+  return { ...data, avatarUrl: data.avatar_url || '' };
 }
 
 // ────────────────────────── auth ──────────────────────────
@@ -211,14 +214,17 @@ async function authSignOut() {
 
 // ────────────────────────── data ──────────────────────────
 async function fetchUserData(userId) {
-  const { data } = await sb.from('user_data').select('name, splits, history').eq('user_id', userId).single();
-  if (data) return data;
+  const { data } = await sb.from('user_data')
+    .select('name, splits, history, bio, avatar_url')
+    .eq('user_id', userId)
+    .single();
+  if (data) return { ...data, avatarUrl: data.avatar_url || '' };
   // First login after email confirmation — seed row from user metadata
   const { data: { user } } = await sb.auth.getUser();
   const name = user?.user_metadata?.name || 'User';
-  const fresh = { name, splits: defaultUserSplits(), history: [] };
+  const fresh = { name, splits: defaultUserSplits(), history: [], bio: '', avatar_url: '' };
   await sb.from('user_data').insert({ user_id: userId, ...fresh });
-  return fresh;
+  return { ...fresh, avatarUrl: '' };
 }
 
 async function pushUserSplits(userId, splits) {
@@ -227,6 +233,23 @@ async function pushUserSplits(userId, splits) {
 
 async function pushUserHistory(userId, history) {
   await sb.from('user_data').update({ history }).eq('user_id', userId);
+}
+
+async function pushUserProfile(userId, { bio, avatarUrl }) {
+  const updates = {};
+  if (bio !== undefined) updates.bio = bio;
+  if (avatarUrl !== undefined) updates.avatar_url = avatarUrl;
+  if (!Object.keys(updates).length) return;
+  await sb.from('user_data').update(updates).eq('user_id', userId);
+}
+
+async function uploadAvatar(userId, file) {
+  const ext = (file.name.split('.').pop() || 'jpg').toLowerCase();
+  const path = `${userId}/avatar.${ext}`;
+  const { error } = await sb.storage.from('avatars').upload(path, file, { upsert: true });
+  if (error) throw error;
+  const { data } = sb.storage.from('avatars').getPublicUrl(path);
+  return data.publicUrl;
 }
 
 function todayStr() {
@@ -258,7 +281,7 @@ Object.assign(window, {
   sb,
   colorFromName, initialsOf,
   authSignUp, authSignIn, authSignOut,
-  fetchUserData, pushUserSplits, pushUserHistory,
+  fetchUserData, pushUserSplits, pushUserHistory, pushUserProfile, uploadAvatar,
   todayStr, makeId, defaultUserSplits, seedDemoSession,
   parseDateStr, weekSetsByMuscle,
   searchUsers, fetchFriendships, sendFriendRequest,
