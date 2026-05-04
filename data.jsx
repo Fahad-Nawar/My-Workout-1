@@ -356,8 +356,12 @@ async function pushUserName(userId, name) {
   if (error) throw error;
 }
 
-async function checkUsernameAvailable(name) {
-  const { data } = await sb.from('user_data').select('user_id').eq('name', name).limit(1);
+async function checkUsernameAvailable(name, currentUserId) {
+  const { data } = await sb.from('user_data')
+    .select('user_id')
+    .eq('name', name)
+    .neq('user_id', currentUserId)
+    .limit(1);
   return !data || data.length === 0;
 }
 

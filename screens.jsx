@@ -590,7 +590,7 @@ function ProfileScreen({ user, onSave, onBack }) {
     setSavingName(true);
     setMsg('');
     try {
-      const available = await checkUsernameAvailable(trimmed);
+      const available = await checkUsernameAvailable(trimmed, user.id);
       if (!available) { setMsg('Username already taken'); setTimeout(() => setMsg(''), 2500); return; }
       await onSave({ name: trimmed });
       setMsg('Username updated');
