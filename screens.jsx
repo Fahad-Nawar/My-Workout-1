@@ -69,7 +69,7 @@ function LoginScreen({ onLogin, onSignUp }) {
 }
 
 // ────────────────────────── Dashboard ──────────────────────────
-function Dashboard({ user, splits, history, onPickSplit, onEditSplits, onLogout, onGo, onToggleSplit }) {
+function Dashboard({ user, splits, history, onPickSplit, onEditSplits, onLogout, onGo, onToggleSplit, onToggleTheme, theme }) {
   const allList = SPLIT_ORDER.map(id => splits[id]).filter(Boolean);
   Object.values(splits).forEach(s => { if (!SPLIT_ORDER.includes(s.id)) allList.push(s); });
   const splitsList = allList.filter(s => s.added !== false);
@@ -86,6 +86,9 @@ function Dashboard({ user, splits, history, onPickSplit, onEditSplits, onLogout,
           <div className="mw-eyebrow">welcome,</div>
           <div style={{ fontWeight: 700, fontSize: 17 }}>{user.name}</div>
         </div>
+        <button className="mw-btn mw-btn-icon" onClick={onToggleTheme} aria-label="Toggle theme">
+          <Icon name={theme === 'light' ? 'moon' : 'sun'} size={16} color="var(--text-dim)"/>
+        </button>
         <button className="mw-btn mw-btn-icon" onClick={onLogout} aria-label="Switch user">
           <Icon name="logout" size={16} color="var(--text-dim)"/>
         </button>

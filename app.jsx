@@ -90,7 +90,7 @@ function useAppState() {
 }
 
 // ─────────── Mobile Shell ───────────
-function MobileApp({ theme, density, accentHue }) {
+function MobileApp({ theme, density, accentHue, onToggleTheme }) {
   const app = useAppState();
   const [route, setRoute] = useS({ name: 'dashboard' });
 
@@ -120,6 +120,8 @@ function MobileApp({ theme, density, accentHue }) {
       onEditSplits={() => setRoute({ name: 'edit' })}
       onLogout={app.logout}
       onToggleSplit={app.toggleSplit}
+      onToggleTheme={onToggleTheme}
+      theme={theme}
       onGo={(n) => setRoute({ name: n })}/>;
   } else if (route.name === 'logger') {
     const split = app.splits[route.splitId];
@@ -158,7 +160,7 @@ function MobileApp({ theme, density, accentHue }) {
 }
 
 // ─────────── Desktop Shell ───────────
-function DesktopApp({ theme, density }) {
+function DesktopApp({ theme, density, onToggleTheme }) {
   const app = useAppState();
   const [route, setRoute] = useS({ name: 'dashboard' });
 
@@ -199,7 +201,10 @@ function DesktopApp({ theme, density }) {
             <div style={{ width: 30, height: 30, borderRadius: 9, background: 'var(--grad)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
               <Icon name="dumbbell" size={16} color="white"/>
             </div>
-            <div style={{ fontWeight: 700, fontSize: 14 }} className="mw-grad-text">MyWorkout</div>
+            <div style={{ fontWeight: 700, fontSize: 14, flex: 1 }} className="mw-grad-text">MyWorkout</div>
+            <button className="mw-btn mw-btn-icon" onClick={onToggleTheme} style={{ width: 28, height: 28 }} aria-label="Toggle theme">
+              <Icon name={theme === 'light' ? 'moon' : 'sun'} size={14} color="var(--text-mute)"/>
+            </button>
           </div>
 
           <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '6px 8px', marginBottom: 14, background: 'var(--surface-2)', borderRadius: 10 }}>
