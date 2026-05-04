@@ -38,63 +38,58 @@ const SPLIT_ORDER = ['anterior', 'posterior', 'push', 'pull', 'upper', 'lower'];
 
 const EXERCISE_POOL = [
   // Chest
-  'Shoulder Press','Chest Fly','Incline Chest Press','Bench Press',
-  'Flat DB Press','Cable Fly','Pec Deck','Push Up','Dumbbell Pullover',
+  'Chest Fly','Incline Chest Press','Bench Press',
+  'Flat DB Press','Cable Fly','Push Up',
   // Shoulders
-  'Lateral Raises','Front Raises','Rear Shoulder','Face Pull',
-  'Arnold Press','Cable Lateral Raise','Reverse Fly','Upright Row',
+  'Shoulder Press','Lateral Raises','Front Raises','Rear Shoulder','Face Pull',
+  'Cable Lateral Raise',
   // Triceps
   'Triceps','Tricep Pushdown','Overhead Tricep Ext.','Dips',
-  'Skull Crusher','Close Grip Bench','Cable Overhead Tricep',
+  'JM press',
   // Biceps
-  'Hammer Curl','Bicep Curl','Preacher Curl','Concentration Curl','Wrist',
-  'EZ Bar Curl','Incline Curl','Cable Curl','Spider Curl','Chin Up',
+  'Hammer Curl','Bicep Curl','Preacher Curl','Wrist',
+  'Cable Curl',
   // Back
-  'Upper Back','Lat Pulldown','Lat Row Single','Cable Row',
-  'Shrugs','Deadlift','Pull Up','T-Bar Row','Chest Supported Row',
+  'Lat Pulldown','Lat Row Single','Cable Row',
+  'Shrugs','Pull Up','T-Bar Row','Chest Supported Row',
   // Abs
   'Abs','Cable Crunch','Hanging Leg Raise','Plank','Russian Twist','Ab Wheel',
   // Legs
   'Leg Press','Leg Extension','Adductors','Abductors',
   'Squat','Romanian Deadlift','Bulgarian Split Squat',
-  'Hack Squat','Goblet Squat','Leg Curl','Sumo Deadlift','Step Up',
-  'Hamstrings','Hamstring Curl','Hip Thrust','Glute Kickback',
+  'Hack Squat','Leg Curl','Sumo Deadlift','Deadlift',
+  'Hip Thrust',
   // Calf
-  'Calf','Standing Calf',
+  'Calf',
 ];
 
 const MUSCLE_MAP = {
   // Chest
   'Chest Fly': 'chest', 'Incline Chest Press': 'chest', 'Bench Press': 'chest',
-  'Flat DB Press': 'chest', 'Cable Fly': 'chest', 'Pec Deck': 'chest',
-  'Push Up': 'chest', 'Dumbbell Pullover': 'chest',
+  'Flat DB Press': 'chest', 'Cable Fly': 'chest', 'Push Up': 'chest',
   // Shoulders
   'Shoulder Press': 'shoulder', 'Lateral Raises': 'shoulder', 'Front Raises': 'shoulder',
-  'Rear Shoulder': 'shoulder', 'Face Pull': 'shoulder', 'Arnold Press': 'shoulder',
-  'Cable Lateral Raise': 'shoulder', 'Reverse Fly': 'shoulder', 'Upright Row': 'shoulder',
+  'Rear Shoulder': 'shoulder', 'Face Pull': 'shoulder', 'Cable Lateral Raise': 'shoulder',
   // Back
-  'Shrugs': 'back', 'Upper Back': 'back', 'Lat Pulldown': 'back',
-  'Lat Row Single': 'back', 'Cable Row': 'back', 'Deadlift': 'back',
-  'Pull Up': 'back', 'T-Bar Row': 'back', 'Chest Supported Row': 'back',
+  'Shrugs': 'back', 'Lat Pulldown': 'back', 'Lat Row Single': 'back',
+  'Cable Row': 'back', 'Deadlift': 'back', 'Pull Up': 'back',
+  'T-Bar Row': 'back', 'Chest Supported Row': 'back',
   // Triceps
   'Triceps': 'triceps', 'Tricep Pushdown': 'triceps',
-  'Overhead Tricep Ext.': 'triceps', 'Dips': 'triceps',
-  'Skull Crusher': 'triceps', 'Close Grip Bench': 'triceps', 'Cable Overhead Tricep': 'triceps',
+  'Overhead Tricep Ext.': 'triceps', 'Dips': 'triceps', 'JM press': 'triceps',
   // Biceps
   'Hammer Curl': 'biceps', 'Bicep Curl': 'biceps', 'Preacher Curl': 'biceps',
-  'Concentration Curl': 'biceps', 'Wrist': 'biceps', 'Chin Up': 'biceps',
-  'EZ Bar Curl': 'biceps', 'Incline Curl': 'biceps', 'Cable Curl': 'biceps', 'Spider Curl': 'biceps',
+  'Wrist': 'biceps', 'Cable Curl': 'biceps',
   // Abs
   'Abs': 'abs', 'Cable Crunch': 'abs', 'Hanging Leg Raise': 'abs',
   'Plank': 'abs', 'Russian Twist': 'abs', 'Ab Wheel': 'abs',
   // Legs
   'Leg Press': 'legs', 'Leg Extension': 'legs', 'Adductors': 'legs', 'Abductors': 'legs',
   'Squat': 'legs', 'Bulgarian Split Squat': 'legs', 'Hack Squat': 'legs',
-  'Goblet Squat': 'legs', 'Leg Curl': 'legs', 'Sumo Deadlift': 'legs', 'Step Up': 'legs',
-  'Hamstrings': 'legs', 'Hamstring Curl': 'legs', 'Romanian Deadlift': 'legs',
-  'Hip Thrust': 'legs', 'Glute Kickback': 'legs',
+  'Leg Curl': 'legs', 'Sumo Deadlift': 'legs', 'Romanian Deadlift': 'legs',
+  'Hip Thrust': 'legs',
   // Calf
-  'Calf': 'calf', 'Standing Calf': 'calf',
+  'Calf': 'calf',
 };
 
 const MUSCLES = [
