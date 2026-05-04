@@ -2,6 +2,40 @@
 
 const { useState, useEffect, useRef, useMemo } = React;
 
+// ──────────────────────────── Shared UI atoms ────────────────────────────
+function FounderBadge() {
+  return (
+    <span style={{
+      display: 'inline-block', fontSize: 9, fontWeight: 700, letterSpacing: '0.07em',
+      background: 'rgba(99,102,241,.15)', color: 'var(--accent)',
+      border: '1px solid rgba(99,102,241,.3)', borderRadius: 4,
+      padding: '1px 5px', whiteSpace: 'nowrap', verticalAlign: 'middle', marginLeft: 5,
+    }}>FOUNDER</span>
+  );
+}
+
+function AvatarView({ name, avatarUrl, size, style: extraStyle }) {
+  const sz = size || 42;
+  if (avatarUrl) {
+    return (
+      <img src={avatarUrl} alt={name}
+        style={{ width: sz, height: sz, borderRadius: '50%', objectFit: 'cover', flexShrink: 0, ...extraStyle }}/>
+    );
+  }
+  const palette = ['#6366f1','#a855f7','#06b6d4','#10b981','#f59e0b','#ef4444','#ec4899','#8b5cf6'];
+  let h = 0; for (let i = 0; i < (name||'').length; i++) h = (h * 31 + (name||'').charCodeAt(i)) | 0;
+  const bg = palette[Math.abs(h) % palette.length];
+  const parts = (name||'').trim().split(/\s+/).filter(Boolean);
+  const initials = !parts.length ? '?' : parts.length === 1 ? parts[0].slice(0,2).toUpperCase() : (parts[0][0]+parts[parts.length-1][0]).toUpperCase();
+  return (
+    <div style={{
+      width: sz, height: sz, borderRadius: '50%', background: bg, flexShrink: 0,
+      display: 'flex', alignItems: 'center', justifyContent: 'center',
+      fontSize: Math.round(sz * 0.38), fontWeight: 700, color: 'white', ...extraStyle,
+    }}>{initials}</div>
+  );
+}
+
 // ────────────────────────── Login / Sign Up ──────────────────────────
 function LoginScreen({ onLogin, onSignUp }) {
   const [mode, setMode] = useState('login');
@@ -81,7 +115,14 @@ function Dashboard({ user, splits, history, onPickSplit, onEditSplits, onLogout,
   return (
     <div className="mw-scroll mw-fade-in" style={{ height: '100%', padding: '12px 16px 100px', overflowY: 'auto' }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 18 }}>
-        <div className="mw-avatar-sm" style={{ background: user.color || 'var(--grad)' }}>{user.initials}</div>
+        <button
+          className="mw-btn mw-btn-icon"
+          onClick={() => onGo('profile')}
+          style={{ padding: 0, width: 'auto', height: 'auto', background: 'none', border: 'none' }}
+          aria-label="View profile"
+        >
+          <AvatarView name={user.name} avatarUrl={user.avatarUrl} size={32} style={{ cursor: 'pointer' }}/>
+        </button>
         <div style={{ flex: 1 }}>
           <div className="mw-eyebrow">welcome,</div>
           <div style={{ fontWeight: 700, fontSize: 17 }}>{user.name}</div>
@@ -483,3 +524,5 @@ window.LoginScreen = LoginScreen;
 window.Dashboard = Dashboard;
 window.Logger = Logger;
 window.SplitPicker = SplitPicker;
+window.FounderBadge = FounderBadge;
+window.AvatarView = AvatarView;
