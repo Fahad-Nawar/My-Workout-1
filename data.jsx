@@ -53,7 +53,7 @@ const EXERCISE_POOL = [
   'Lat Pulldown','Lat Row Single','Cable Row',
   'Shrugs','Pull Up','T-Bar Row','Chest Supported Row',
   // Abs
-  'Abs','Cable Crunch','Hanging Leg Raise','Plank','Russian Twist','Ab Wheel',
+  'Abs','Cable Crunch','Plank','Ab Wheel',
   // Legs
   'Leg Press','Leg Extension','Adductors','Abductors',
   'Squat','Romanian Deadlift','Bulgarian Split Squat',
@@ -81,8 +81,8 @@ const MUSCLE_MAP = {
   'Hammer Curl': 'biceps', 'Bicep Curl': 'biceps', 'Preacher Curl': 'biceps',
   'Wrist': 'biceps', 'Cable Curl': 'biceps',
   // Abs
-  'Abs': 'abs', 'Cable Crunch': 'abs', 'Hanging Leg Raise': 'abs',
-  'Plank': 'abs', 'Russian Twist': 'abs', 'Ab Wheel': 'abs',
+  'Abs': 'abs', 'Cable Crunch': 'abs',
+  'Plank': 'abs', 'Ab Wheel': 'abs',
   // Legs
   'Leg Press': 'legs', 'Leg Extension': 'legs', 'Adductors': 'legs', 'Abductors': 'legs',
   'Squat': 'legs', 'Bulgarian Split Squat': 'legs', 'Hack Squat': 'legs',
