@@ -354,7 +354,7 @@ function DesktopMuscleVolume({ history }) {
   const counts = useM(() => weekSetsByMuscle(history), [history]);
   const today = new Date();
   const dow = today.getDay();
-  const daysLeft = dow === 0 ? 0 : 7 - dow;
+  const daysLeft = (4 - dow + 7) % 7;
   const totalSets = MUSCLES.reduce((a, m) => a + (counts[m.id] || 0), 0);
 
   return (
@@ -392,7 +392,7 @@ function DesktopMuscleVolume({ history }) {
         })}
       </div>
       <div className="mw-mute" style={{ fontSize: 10, marginTop: 10, paddingTop: 8, borderTop: '1px solid var(--border)' }}>
-        Target sets per muscle · resets Monday
+        Target sets per muscle · resets Friday
       </div>
     </div>
   );

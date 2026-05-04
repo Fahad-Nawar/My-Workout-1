@@ -89,20 +89,23 @@ function parseDateStr(str) {
 
 function weekSetsByMuscle(history) {
   const today = new Date();
-  const dow = today.getDay();
-  const monday = new Date(today);
-  monday.setDate(today.getDate() - (dow === 0 ? 6 : dow - 1));
-  monday.setHours(0, 0, 0, 0);
-  const sunday = new Date(monday);
-  sunday.setDate(monday.getDate() + 6);
-  sunday.setHours(23, 59, 59, 999);
+  const dow = today.getDay(); // 0=Sun … 5=Fri … 6=Sat
+  const daysSinceFriday = (dow - 5 + 7) % 7; // 0 on Fri, 1 on Sat, …, 6 on Thu
+
+  const friday = new Date(today);
+  friday.setDate(today.getDate() - daysSinceFriday);
+  friday.setHours(0, 0, 0, 0);
+
+  const thursday = new Date(friday);
+  thursday.setDate(friday.getDate() + 6);
+  thursday.setHours(23, 59, 59, 999);
 
   const counts = {};
   MUSCLES.forEach(m => { counts[m.id] = 0; });
 
   history.forEach(sess => {
     const d = parseDateStr(sess.date);
-    if (d && d >= monday && d <= sunday) {
+    if (d && d >= friday && d <= thursday) {
       sess.exercises?.forEach(ex => {
         const muscle = MUSCLE_MAP[ex.name];
         if (muscle && counts[muscle] !== undefined) {

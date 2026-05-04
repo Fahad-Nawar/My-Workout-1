@@ -204,14 +204,14 @@ function MuscleVolumePanel({ history }) {
   const counts = useMemo2(() => weekSetsByMuscle(history), [history]);
   const today = new Date();
   const dow = today.getDay();
-  const daysLeft = dow === 0 ? 0 : 7 - dow;
+  const daysLeft = (4 - dow + 7) % 7; // 0 on Thu (resets tomorrow = Fri), 6 on Fri
 
   return (
     <div className="mw-card" style={{ marginBottom: 20 }}>
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14 }}>
         <div>
           <div className="mw-eyebrow">
-            Mon – Sun · {daysLeft === 0 ? 'Resets tomorrow' : `${daysLeft} day${daysLeft === 1 ? '' : 's'} left`}
+            Fri – Thu · {daysLeft === 0 ? 'Resets tomorrow' : `${daysLeft} day${daysLeft === 1 ? '' : 's'} left`}
           </div>
           <div style={{ fontWeight: 700, fontSize: 17 }}>Weekly Volume</div>
         </div>
@@ -243,7 +243,7 @@ function MuscleVolumePanel({ history }) {
         })}
       </div>
       <div className="mw-mute" style={{ fontSize: 11, marginTop: 12, paddingTop: 10, borderTop: '1px solid var(--border)' }}>
-        Weekly minimum sets per muscle. Resets every Monday.
+        Weekly minimum sets per muscle. Resets every Friday.
       </div>
     </div>
   );
