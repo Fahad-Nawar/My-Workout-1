@@ -269,7 +269,7 @@ function FriendDetail({ friendId, data, onBack }) {
   if (!data) {
     return (
       <div className="mw-fade-in" style={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
-        <div style={{ padding: '12px 16px', display: 'flex', alignItems: 'center', gap: 10, borderBottom: '1px solid var(--border)' }}>
+        <div style={{ padding: '12px 16px', display: 'flex', alignItems: 'center', borderBottom: '1px solid var(--border)' }}>
           <button className="mw-btn mw-btn-icon" onClick={onBack}><Icon name="arrow-left" size={16}/></button>
         </div>
         <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
@@ -280,52 +280,108 @@ function FriendDetail({ friendId, data, onBack }) {
   }
 
   const history = data.history || [];
+  const weekCounts = weekSetsByMuscle(history);
+  const weekSets = MUSCLES.reduce((a, m) => a + (weekCounts[m.id] || 0), 0);
+
+  // simple streak counter
+  const streak = (() => {
+    if (!history.length) return 0;
+    const sorted = [...history].map(s => parseDateStr(s.date)).filter(Boolean).sort((a, b) => b - a);
+    let count = 0;
+    let check = new Date(); check.setHours(0,0,0,0);
+    for (const d of sorted) {
+      const diff = Math.round((check - d) / 86400000);
+      if (diff <= 1) { count++; check = new Date(d); }
+      else break;
+    }
+    return count;
+  })();
 
   return (
     <div className="mw-fade-in" style={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
-      <div style={{ padding: '12px 16px', display: 'flex', alignItems: 'center', gap: 10, borderBottom: '1px solid var(--border)' }}>
+      {/* Nav */}
+      <div style={{ padding: '12px 16px', display: 'flex', alignItems: 'center', borderBottom: '1px solid var(--border)', flexShrink: 0 }}>
         <button className="mw-btn mw-btn-icon" onClick={onBack}><Icon name="arrow-left" size={16}/></button>
-        <div style={{ flex: 1 }}>
-          <div className="mw-eyebrow">Friend profile</div>
-          <div style={{ fontWeight: 700, fontSize: 16 }}>{data.name}</div>
-        </div>
       </div>
 
-      <div className="mw-scroll" style={{ flex: 1, padding: '16px' }}>
-        <div style={{ textAlign: 'center', marginBottom: 20 }}>
-          <AvatarView name={data.name} avatarUrl={data.avatarUrl || ''} size={72}/>
-          <div style={{ marginTop: 10, display: 'flex', alignItems: 'center', justifyContent: 'center', flexWrap: 'wrap', gap: 6 }}>
-            <span style={{ fontWeight: 700, fontSize: 20, letterSpacing: '-0.02em' }}>{data.name}</span>
+      <div className="mw-scroll" style={{ flex: 1 }}>
+        {/* Hero */}
+        <div style={{
+          background: 'linear-gradient(160deg, var(--surface-2) 0%, var(--surface) 100%)',
+          padding: '28px 16px 20px',
+          textAlign: 'center',
+          borderBottom: '1px solid var(--border)',
+        }}>
+          <AvatarView name={data.name} avatarUrl={data.avatarUrl || ''} size={88}/>
+          <div style={{ marginTop: 12, display: 'flex', alignItems: 'center', justifyContent: 'center', flexWrap: 'wrap', gap: 8 }}>
+            <span style={{ fontWeight: 800, fontSize: 22, letterSpacing: '-0.03em' }}>{data.name}</span>
             <FounderBadge/>
           </div>
-          <div className="mw-mute" style={{ fontSize: 12, marginTop: 2 }}>{history.length} sessions total</div>
-          {data.bio ? (
-            <div style={{ marginTop: 10, background: 'var(--surface-2)', borderRadius: 12, padding: '10px 14px', textAlign: 'left', borderLeft: '3px solid var(--accent)' }}>
-              <div style={{ fontSize: 13, lineHeight: 1.65, color: 'var(--text-dim)', whiteSpace: 'pre-wrap' }} dir="auto">{data.bio}</div>
-            </div>
-          ) : null}
+
+          {/* Stats row */}
+          <div style={{ display: 'flex', justifyContent: 'center', gap: 0, marginTop: 16, background: 'var(--surface)', borderRadius: 14, overflow: 'hidden', border: '1px solid var(--border)' }}>
+            {[
+              { label: 'Sessions', value: history.length },
+              { label: 'Sets / week', value: weekSets },
+              { label: 'Streak', value: streak + (streak === 1 ? ' day' : ' days') },
+            ].map((s, i, arr) => (
+              <div key={s.label} style={{ flex: 1, padding: '12px 8px', borderRight: i < arr.length - 1 ? '1px solid var(--border)' : 'none', textAlign: 'center' }}>
+                <div style={{ fontWeight: 700, fontSize: 18, letterSpacing: '-0.02em' }}>{s.value}</div>
+                <div style={{ fontSize: 10, color: 'var(--text-mute)', textTransform: 'uppercase', letterSpacing: '0.06em', marginTop: 2 }}>{s.label}</div>
+              </div>
+            ))}
+          </div>
         </div>
 
-        <MuscleVolumePanel history={history}/>
+        <div style={{ padding: '16px 16px 40px' }}>
+          {/* Bio */}
+          {data.bio ? (
+            <div className="mw-card" style={{ marginBottom: 16, padding: '12px 14px', borderLeft: '3px solid var(--accent)' }}>
+              <div className="mw-eyebrow" style={{ marginBottom: 6 }}>Bio</div>
+              <div style={{ fontSize: 14, lineHeight: 1.65, color: 'var(--text-dim)', whiteSpace: 'pre-wrap' }} dir="auto">{data.bio}</div>
+            </div>
+          ) : null}
 
-        {history.length > 0 && (
-          <>
-            <div className="mw-eyebrow" style={{ marginBottom: 8 }}>Recent sessions</div>
-            {history.slice(0, 6).map(sess => {
-              const totalSets = sess.exercises?.reduce((a, e) => a + (e.sets?.length || 0), 0) || 0;
-              const splitName = data.splits?.[sess.day]?.name || sess.day;
-              return (
-                <div key={sess.id} className="mw-card" style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 8, padding: '10px 14px' }}>
-                  <div style={{ flex: 1, minWidth: 0 }}>
-                    <div style={{ fontWeight: 600, fontSize: 13 }}>{splitName}</div>
-                    <div className="mw-mute" style={{ fontSize: 11 }}>{sess.date}</div>
+          {/* Weekly volume */}
+          <MuscleVolumePanel history={history}/>
+
+          {/* Recent sessions */}
+          {history.length > 0 && (
+            <>
+              <div className="mw-eyebrow" style={{ marginBottom: 10, marginTop: 4 }}>Recent sessions</div>
+              {history.slice(0, 6).map(sess => {
+                const sets = sess.exercises?.reduce((a, e) => a + (e.sets?.length || 0), 0) || 0;
+                const exCount = sess.exercises?.length || 0;
+                const splitInfo = data.splits?.[sess.day];
+                const splitName = splitInfo?.name || sess.day;
+                const splitColor = splitInfo?.color || 'var(--accent)';
+                const splitIcon = splitInfo?.icon || splitName?.[0] || '?';
+                return (
+                  <div key={sess.id} className="mw-card" style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 8, padding: '10px 14px' }}>
+                    <div style={{ width: 38, height: 38, borderRadius: 11, background: splitColor + '22', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                      <span style={{ fontSize: 15, fontWeight: 700, color: splitColor, fontFamily: 'var(--mono)' }}>{splitIcon}</span>
+                    </div>
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <div style={{ fontWeight: 600, fontSize: 13 }}>{splitName}</div>
+                      <div className="mw-mute" style={{ fontSize: 11 }}>{sess.date} · {exCount} exercises</div>
+                    </div>
+                    <div style={{ textAlign: 'right', flexShrink: 0 }}>
+                      <div style={{ fontWeight: 700, fontSize: 14 }}>{sets}</div>
+                      <div style={{ fontSize: 10, color: 'var(--text-mute)' }}>sets</div>
+                    </div>
                   </div>
-                  <span className="mw-pill">{totalSets} sets</span>
-                </div>
-              );
-            })}
-          </>
-        )}
+                );
+              })}
+            </>
+          )}
+
+          {history.length === 0 && (
+            <div style={{ textAlign: 'center', padding: '32px 0', color: 'var(--text-mute)', fontSize: 13 }}>
+              <Icon name="dumbbell" size={32} color="var(--text-mute)"/>
+              <div style={{ marginTop: 10 }}>No sessions logged yet</div>
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );
