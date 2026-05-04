@@ -4,6 +4,7 @@ const { useState: useState2, useEffect: useEffect2, useMemo: useMemo2, useRef: u
 
 // ────────────────────────── Edit Split ──────────────────────────
 function EditSplits({ splits, onSave, onBack }) {
+  const lang = React.useContext(LangContext);
   const [working, setWorking] = useState2(() => JSON.parse(JSON.stringify(splits)));
   const [active, setActive] = useState2(SPLIT_ORDER[0]);
   const [showCustom, setShowCustom] = useState2(false);
@@ -63,7 +64,7 @@ function EditSplits({ splits, onSave, onBack }) {
               <div key={ex} className="mw-card" style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '10px 12px' }}>
                 <div className="mw-mono mw-mute" style={{ fontSize: 11, width: 16 }}>{i + 1}</div>
                 <Icon name="grip" size={14} color="var(--text-mute)"/>
-                <div style={{ flex: 1, fontSize: 13, fontWeight: 500 }}>{ex}</div>
+                <div style={{ flex: 1, fontSize: 13, fontWeight: 500 }}>{tr(ex, lang)}</div>
                 <button className="mw-btn mw-btn-icon" onClick={() => removeExercise(ex)} style={{ width: 30, height: 30 }}>
                   <Icon name="trash" size={13} color="var(--danger)"/>
                 </button>
@@ -75,7 +76,7 @@ function EditSplits({ splits, onSave, onBack }) {
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
             {EXERCISE_POOL.filter(e => !cur.exercises.includes(e)).map(ex => (
               <button key={ex} className="mw-btn mw-btn-sm mw-btn-ghost" onClick={() => addExercise(ex)}>
-                <Icon name="plus" size={11} color="var(--text-dim)"/> {ex}
+                <Icon name="plus" size={11} color="var(--text-dim)"/> {tr(ex, lang)}
               </button>
             ))}
           </div>
@@ -141,6 +142,7 @@ function CustomSplitModal({ onClose, onCreate }) {
 
 // ────────────────────────── History ──────────────────────────
 function History({ history, splits, onBack, onDelete }) {
+  const lang = React.useContext(LangContext);
   const [openId, setOpenId] = useState2(null);
   return (
     <div className="mw-fade-in" style={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
@@ -177,7 +179,7 @@ function History({ history, splits, onBack, onDelete }) {
                 <div style={{ padding: '0 14px 12px', borderTop: '1px solid var(--border)' }}>
                   {sess.exercises?.map(e => (
                     <div key={e.name} style={{ padding: '10px 0', borderBottom: '1px solid var(--border)' }}>
-                      <div style={{ fontSize: 12, fontWeight: 600, marginBottom: 4 }}>{e.name}</div>
+                      <div style={{ fontSize: 12, fontWeight: 600, marginBottom: 4 }}>{tr(e.name, lang)}</div>
                       <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap' }}>
                         {e.sets?.map((s, i) => (
                           <span key={i} className="mw-pill">{s.weight || '–'}kg × {s.reps || '–'}</span>
@@ -201,6 +203,7 @@ function History({ history, splits, onBack, onDelete }) {
 
 // ────────────────────────── Muscle Volume Panel ──────────────────────────
 function MuscleVolumePanel({ history }) {
+  const lang = React.useContext(LangContext);
   const counts = useMemo2(() => weekSetsByMuscle(history), [history]);
   const today = new Date();
   const dow = today.getDay();
@@ -227,7 +230,7 @@ function MuscleVolumePanel({ history }) {
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                   <div style={{ width: 8, height: 8, borderRadius: '50%', background: done ? '#22c55e' : m.color, flexShrink: 0 }}/>
-                  <span style={{ fontSize: 13, fontWeight: 600 }}>{m.label}</span>
+                  <span style={{ fontSize: 13, fontWeight: 600 }}>{tr(m.label, lang)}</span>
                 </div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
                   <span style={{ fontSize: 13, fontFamily: 'var(--mono)', color: done ? '#22c55e' : 'var(--text)', fontWeight: 700 }}>{count}</span>

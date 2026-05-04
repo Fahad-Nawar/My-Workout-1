@@ -103,7 +103,8 @@ function LoginScreen({ onLogin, onSignUp }) {
 }
 
 // ────────────────────────── Dashboard ──────────────────────────
-function Dashboard({ user, splits, history, onPickSplit, onEditSplits, onLogout, onGo, onToggleSplit, onToggleTheme, theme }) {
+function Dashboard({ user, splits, history, onPickSplit, onEditSplits, onLogout, onGo, onToggleSplit, onToggleTheme, theme, onToggleLang }) {
+  const lang = React.useContext(LangContext);
   const allList = SPLIT_ORDER.map(id => splits[id]).filter(Boolean);
   Object.values(splits).forEach(s => { if (!SPLIT_ORDER.includes(s.id)) allList.push(s); });
   const splitsList = allList.filter(s => s.added !== false);
@@ -127,6 +128,10 @@ function Dashboard({ user, splits, history, onPickSplit, onEditSplits, onLogout,
           <div className="mw-eyebrow">welcome,</div>
           <div style={{ fontWeight: 700, fontSize: 17 }}>{user.name}</div>
         </div>
+        <button className="mw-btn mw-btn-icon" onClick={onToggleLang} aria-label="Toggle language"
+          style={{ fontWeight: 700, fontSize: 13 }}>
+          {lang === 'ar' ? 'En' : 'ع'}
+        </button>
         <button className="mw-btn mw-btn-icon" onClick={onToggleTheme} aria-label="Toggle theme">
           <Icon name={theme === 'light' ? 'moon' : 'sun'} size={16} color="var(--text-dim)"/>
         </button>
@@ -246,6 +251,7 @@ function SplitPicker({ available, all, onAdd, onRemove, onClose, onCreateCustom 
 
 
 function SplitCard({ split, sessions, todayDone, onClick }) {
+  const lang = React.useContext(LangContext);
   return (
     <div className={`mw-splitcard ${split.recommended ? 'recommended' : ''}`} onClick={onClick}>
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
@@ -258,8 +264,8 @@ function SplitCard({ split, sessions, todayDone, onClick }) {
         }}>{split.icon || split.name[0]}</div>
         {todayDone && <span className="mw-dot" title="Today done"/>}
       </div>
-      <div style={{ fontWeight: 700, fontSize: 15, marginBottom: 2 }}>{split.name}</div>
-      <div className="mw-mute" style={{ fontSize: 11, marginBottom: 10 }}>{split.subtitle || `${split.exercises.length} exercises`}</div>
+      <div style={{ fontWeight: 700, fontSize: 15, marginBottom: 2 }}>{tr(split.name, lang)}</div>
+      <div className="mw-mute" style={{ fontSize: 11, marginBottom: 10 }}>{tr(split.subtitle, lang) || `${split.exercises.length} exercises`}</div>
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
         <span className="mw-pill">{split.exercises.length} ex</span>
         <span className="mw-mute" style={{ fontSize: 11, fontFamily: 'var(--mono)' }}>{sessions} logged</span>
@@ -318,7 +324,7 @@ function streakOf(history) {
 
 // ────────────────────────── Logger ──────────────────────────
 function Logger({ split, history, onBack, onSave, onEditSplit }) {
-  // state[exerciseName] = [{weight, reps}, ...]
+  const lang = React.useContext(LangContext);
   const todaySession = history.find(h => h.date === todayStr() && h.day === split.id);
 
   const [state, setState] = useState(() => {
@@ -387,7 +393,7 @@ function Logger({ split, history, onBack, onSave, onEditSplit }) {
         <button className="mw-btn mw-btn-icon" onClick={onBack}><Icon name="arrow-left" size={16}/></button>
         <div style={{ flex: 1 }}>
           <div className="mw-eyebrow">{todayStr()}</div>
-          <div style={{ fontWeight: 700, fontSize: 16 }}>{split.name} <span className="mw-mute" style={{ fontSize: 12, fontWeight: 400 }}>· {filledCount}/{split.exercises.length}</span></div>
+          <div style={{ fontWeight: 700, fontSize: 16 }}>{tr(split.name, lang)} <span className="mw-mute" style={{ fontSize: 12, fontWeight: 400 }}>· {filledCount}/{split.exercises.length}</span></div>
         </div>
         <button className="mw-btn mw-btn-icon" onClick={() => setShowTimer(true)} title="Rest timer">
           <Icon name="timer" size={16} color="var(--text-dim)"/>
@@ -470,6 +476,7 @@ function lastSetOf(history, exName) {
 }
 
 function ExerciseCard({ name, index, sets, expanded, onToggle, onUpdate, onAdd, onRemove, onBump, lastSet }) {
+  const lang = React.useContext(LangContext);
   const filled = sets.filter(s => s.weight || s.reps).length;
   const currentMax = Math.max(...sets.map(s => parseFloat(s.weight) || 0));
   const isPB = currentMax > 0 && (parseFloat(lastSet?.weight) || 0) > 0 && currentMax > parseFloat(lastSet.weight);
@@ -478,7 +485,7 @@ function ExerciseCard({ name, index, sets, expanded, onToggle, onUpdate, onAdd, 
       <button onClick={onToggle} style={{ width: '100%', padding: '12px 14px', display: 'flex', alignItems: 'center', gap: 10, textAlign: 'left' }}>
         <div className="mw-mono" style={{ width: 22, height: 22, borderRadius: 6, background: 'var(--surface-2)', color: 'var(--text-mute)', fontSize: 11, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>{String(index + 1).padStart(2, '0')}</div>
         <div style={{ flex: 1 }}>
-          <div style={{ fontWeight: 600, fontSize: 14 }}>{name}</div>
+          <div style={{ fontWeight: 600, fontSize: 14 }}>{tr(name, lang)}</div>
           {lastSet && !expanded && <div className="mw-mute" style={{ fontSize: 11, marginTop: 1 }}>last: {lastSet.weight}kg × {lastSet.reps}</div>}
         </div>
         {isPB && <span className="mw-chip" style={{ background: '#22c55e22', color: '#22c55e' }}>↑ PB</span>}

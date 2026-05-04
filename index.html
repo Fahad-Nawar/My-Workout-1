@@ -38,11 +38,20 @@
     function Root() {
       const [isMobile, setIsMobile] = useS(() => window.matchMedia('(max-width: 767px)').matches);
       const [theme, setTheme] = useS(() => localStorage.getItem('mw-theme') || 'slate');
+      const [lang, setLang] = useS(() => localStorage.getItem('mw-lang') || 'en');
 
       const toggleTheme = () => {
         setTheme(t => {
           const next = t === 'light' ? 'slate' : 'light';
           localStorage.setItem('mw-theme', next);
+          return next;
+        });
+      };
+
+      const toggleLang = () => {
+        setLang(l => {
+          const next = l === 'en' ? 'ar' : 'en';
+          localStorage.setItem('mw-lang', next);
           return next;
         });
       };
@@ -61,14 +70,14 @@
       if (isMobile) {
         return (
           <div style={{ height: '100%' }}>
-            <MobileApp theme={theme} density="comfy" onToggleTheme={toggleTheme}/>
+            <MobileApp theme={theme} density="comfy" onToggleTheme={toggleTheme} lang={lang} onToggleLang={toggleLang}/>
           </div>
         );
       }
 
       return (
         <div style={{ height: '100%' }}>
-          <DesktopApp theme={theme} density="comfy" onToggleTheme={toggleTheme}/>
+          <DesktopApp theme={theme} density="comfy" onToggleTheme={toggleTheme} lang={lang} onToggleLang={toggleLang}/>
         </div>
       );
     }

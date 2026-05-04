@@ -7,30 +7,30 @@ const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
 const DEFAULT_SPLITS = {
   anterior: {
-    id: 'anterior', name: 'Anterior', subtitle: 'Front of body', icon: 'A',
+    id: 'anterior', name: 'الجزء الأمامي', subtitle: 'مقدمة الجسم', icon: 'أ',
     recommended: true, color: '#6366f1',
-    exercises: ['Shoulder Press','Chest Fly','Incline Chest Press','Lateral Raises','Triceps','Abs','Leg Press','Leg Extension','Adductors'],
+    exercises: ['كتف امامي','تجميع صدر','صدر علوي','رفرفة جانبية','ترايسبس','بطن','دفع أرجل','تمديد الأرجل','عضلة داخل الفخذ'],
   },
   posterior: {
-    id: 'posterior', name: 'Posterior', subtitle: 'Back of body', icon: 'P',
+    id: 'posterior', name: 'الجزء الخلفي', subtitle: 'خلفية الجسم', icon: 'خ',
     recommended: true, color: '#a855f7',
-    exercises: ['Upper Back','Lat Pulldown','Lat Row Single','Shrugs','Rear Shoulder','Hamstrings','Calf','Hammer Curl','Hip Thrust','Preacher Curl','Wrist'],
+    exercises: ['سحب علوي','سحب لاتس يد واحدة','ترابيس','كتف خلفي','بطات','هامر كيرل','رفع الحوض','كيرل على المقعد','ساعد'],
   },
   push: {
-    id: 'push', name: 'Push', subtitle: 'Chest · Shoulders · Tri', icon: '↑', color: '#06b6d4',
-    exercises: ['Shoulder Press','Chest Fly','Incline Chest Press','Lateral Raises','Triceps','Abs'],
+    id: 'push', name: 'دفع', subtitle: 'صدر · كتف · ترايسبس', icon: '↑', color: '#06b6d4',
+    exercises: ['كتف امامي','تجميع صدر','صدر علوي','رفرفة جانبية','ترايسبس','بطن'],
   },
   pull: {
-    id: 'pull', name: 'Pull', subtitle: 'Back · Biceps', icon: '↓', color: '#10b981',
-    exercises: ['Upper Back','Lat Pulldown','Lat Row Single','Shrugs','Rear Shoulder','Hammer Curl','Preacher Curl','Wrist'],
+    id: 'pull', name: 'سحب', subtitle: 'ظهر · بايسبس', icon: '↓', color: '#10b981',
+    exercises: ['سحب علوي','سحب لاتس يد واحدة','ترابيس','كتف خلفي','هامر كيرل','كيرل على المقعد','ساعد'],
   },
   upper: {
-    id: 'upper', name: 'Upper', subtitle: 'Push + Pull', icon: '⤴', color: '#f59e0b',
-    exercises: ['Shoulder Press','Chest Fly','Incline Chest Press','Lateral Raises','Triceps','Upper Back','Lat Pulldown','Lat Row Single','Shrugs','Rear Shoulder','Hammer Curl','Preacher Curl','Wrist'],
+    id: 'upper', name: 'الجزء العلوي', subtitle: 'دفع + سحب', icon: '⤴', color: '#f59e0b',
+    exercises: ['كتف امامي','تجميع صدر','صدر علوي','رفرفة جانبية','ترايسبس','سحب علوي','سحب لاتس يد واحدة','ترابيس','كتف خلفي','هامر كيرل','كيرل على المقعد','ساعد'],
   },
   lower: {
-    id: 'lower', name: 'Lower', subtitle: 'Legs · Glutes', icon: '⤵', color: '#ef4444',
-    exercises: ['Leg Press','Leg Extension','Adductors','Hip Thrust','Hamstrings','Calf'],
+    id: 'lower', name: 'الجزء السفلي', subtitle: 'أرجل · مؤخرة', icon: '⤵', color: '#ef4444',
+    exercises: ['دفع أرجل','تمديد الأرجل','عضلة داخل الفخذ','رفع الحوض','بطات'],
   },
 };
 
@@ -39,9 +39,9 @@ const SPLIT_ORDER = ['anterior', 'posterior', 'push', 'pull', 'upper', 'lower'];
 const EXERCISE_POOL = [
   // Chest
   'Chest Fly','Incline Chest Press','Bench Press',
-  'Flat DB Press','Cable Fly','Push Up',
+  'Flat DB','Cable Fly','Push Up',
   // Shoulders
-  'Shoulder Press','Lateral Raises','Front Raises','Rear Shoulder','Face Pull',
+  'Shoulder Press','Lateral Raises','Rear Shoulder','Face Pull',
   'Cable Lateral Raise',
   // Triceps
   'Triceps','Tricep Pushdown','Overhead Tricep Ext.','Dips',
@@ -68,11 +68,11 @@ const MUSCLE_MAP = {
   'Chest Fly': 'chest', 'Incline Chest Press': 'chest', 'Bench Press': 'chest',
   'Flat DB Press': 'chest', 'Cable Fly': 'chest', 'Push Up': 'chest',
   // Shoulders
-  'Shoulder Press': 'shoulder', 'Lateral Raises': 'shoulder', 'Front Raises': 'shoulder',
+  'Shoulder Press': 'shoulder', 'Lateral Raises': 'shoulder', 
   'Rear Shoulder': 'shoulder', 'Face Pull': 'shoulder', 'Cable Lateral Raise': 'shoulder',
   // Back
   'Shrugs': 'back', 'Lat Pulldown': 'back', 'Lat Row Single': 'back',
-  'Cable Row': 'back', 'Deadlift': 'back', 'Pull Up': 'back',
+  'Cable Row': 'back','Pull Up': 'back',
   'T-Bar Row': 'back', 'Chest Supported Row': 'back',
   // Triceps
   'Triceps': 'triceps', 'Tricep Pushdown': 'triceps',
@@ -87,7 +87,7 @@ const MUSCLE_MAP = {
   'Leg Press': 'legs', 'Leg Extension': 'legs', 'Adductors': 'legs', 'Abductors': 'legs',
   'Squat': 'legs', 'Bulgarian Split Squat': 'legs', 'Hack Squat': 'legs',
   'Leg Curl': 'legs', 'Sumo Deadlift': 'legs', 'Romanian Deadlift': 'legs',
-  'Hip Thrust': 'legs',
+  'Hip Thrust': 'legs', 'Deadlift': 'legs',
   // Calf
   'Calf': 'calf',
 };
@@ -102,6 +102,42 @@ const MUSCLES = [
   { id: 'calf',     label: 'Calf',     target: 10, color: '#ec4899' },
   { id: 'abs',      label: 'Abs',      target: 8,  color: '#8b5cf6' },
 ];
+
+// ─── Arabic translations ───────────────────────────────────────────────────
+const AR = {
+  // Exercises
+  'Chest Fly':'تجميع صدر','Incline Chest Press':'صدر علوي','Bench Press':'بنش برس',
+  'Flat DB':'صدر دمبل مستوي','Cable Fly':'تجميع صدر كيبل','Push Up':'ضغط أرضي',
+  'Shoulder Press':'كتف امامي','Lateral Raises':'رفرفة جانبية',
+  'Rear Shoulder':'كتف خلفي','Face Pull':'سحب للوجه','Cable Lateral Raise':'رفرفة جانبية كيبل',
+  'Triceps':'ترايسبس','Tricep Pushdown':'دفع ترايسبس كيبل',
+  'Overhead Tricep Ext.':'تمديد ترايسبس فوق الرأس','Dips':'ديبس','JM press':'جي إم برس',
+  'Hammer Curl':'هامر كيرل','Bicep Curl':'بايسبس كيرل','Preacher Curl':'كيرل على المقعد',
+  'Wrist':'ساعد','Cable Curl':'بايسبس كيبل',
+  'Lat Pulldown':'سحب علوي','Lat Row Single':'سحب لاتس يد واحدة','Cable Row':'سحب كيبل أرضي',
+  'Shrugs':'ترابيس','Pull Up':'عقلة','T-Bar Row':'سحب تي بار','Chest Supported Row':'سحب ظهر مدعوم بالصدر',
+  'Abs':'بطن','Cable Crunch':'كرنش كيبل','Plank':'بلانك','Ab Wheel':'عجلة البطن',
+  'Leg Press':'دفع أرجل','Leg Extension':'تمديد الأرجل',
+  'Adductors':'عضلة داخل الفخذ','Abductors':'عضلة خارج الفخذ',
+  'Squat':'سكوات','Romanian Deadlift':'ديدلفت روماني','Bulgarian Split Squat':'سكوات بلغاري',
+  'Hack Squat':'هاك سكوات','Leg Curl':'ثني الأرجل','Sumo Deadlift':'ديدلفت سومو',
+  'Deadlift':'ديدلفت','Hip Thrust':'رفع الحوض','Calf':'بطات',
+  // Muscle labels
+  'Chest':'صدر','Shoulder':'كتف','Back':'ظهر','Biceps':'بايسبس','Legs':'أرجل',
+  // Split names
+  'Anterior':'الجزء الأمامي','Posterior':'الجزء الخلفي',
+  'Push':'دفع','Pull':'سحب','Upper':'الجزء العلوي','Lower':'الجزء السفلي',
+  // Split subtitles
+  'Front of body':'مقدمة الجسم','Back of body':'خلفية الجسم',
+  'Chest · Shoulders · Tri':'صدر · كتف · ترايسبس','Back · Biceps':'ظهر · بايسبس',
+  'Push + Pull':'دفع + سحب','Legs · Glutes':'أرجل · مؤخرة',
+};
+
+const LangContext = React.createContext('en');
+function tr(key, lang) {
+  if (!lang || lang === 'en' || !key) return key || '';
+  return AR[key] || key;
+}
 
 function toEnglishNumerals(str) {
   return String(str)
@@ -310,6 +346,7 @@ function seedDemoSession(userId, splitId, exercises, daysAgo) {
 
 Object.assign(window, {
   DEFAULT_SPLITS, SPLIT_ORDER, EXERCISE_POOL, MUSCLE_MAP, MUSCLES,
+  AR, LangContext, tr,
   toEnglishNumerals,
   sb,
   colorFromName, initialsOf,

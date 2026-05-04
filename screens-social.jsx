@@ -116,6 +116,7 @@ function SocialScreen({ currentUser, onCopySplit }) {
 
 // ─── Friend Card ───
 function FriendCard({ friendId, data, onClick, onRemove }) {
+  const lang = React.useContext(LangContext);
   const counts = useMo(() => weekSetsByMuscle(data?.history || []), [data]);
   const totalSets = MUSCLES.reduce((a, m) => a + (counts[m.id] || 0), 0);
 
@@ -151,7 +152,7 @@ function FriendCard({ friendId, data, onClick, onRemove }) {
           const done = count >= m.target;
           return (
             <div key={m.id} style={{ paddingTop: 4 }}>
-              <div style={{ fontSize: 9, color: 'var(--text-mute)', marginBottom: 2, fontFamily: 'var(--mono)' }}>{m.label.toUpperCase().slice(0, 3)}</div>
+              <div style={{ fontSize: 9, color: 'var(--text-mute)', marginBottom: 2, fontFamily: 'var(--mono)' }}>{tr(m.label, lang).slice(0, 3)}</div>
               <div style={{ height: 3, background: 'var(--border)', borderRadius: 2, overflow: 'hidden' }}>
                 <div style={{ height: '100%', width: `${pct * 100}%`, background: done ? '#22c55e' : m.color, borderRadius: 2 }}/>
               </div>
@@ -266,6 +267,7 @@ function AddFriendModal({ currentUserId, friendships, onClose, onSent }) {
 
 // ─── Friend Detail ───
 function FriendDetail({ friendId, data, onBack, onCopySplit }) {
+  const lang = React.useContext(LangContext);
   const [copiedId, setCopiedId] = useSo(null);
 
   const handleCopy = (split) => {
@@ -352,7 +354,7 @@ function FriendDetail({ friendId, data, onBack, onCopySplit }) {
                         <span style={{ fontWeight: 700, color: split.color || 'var(--accent)', fontFamily: 'var(--mono)', fontSize: 14 }}>{split.icon || split.name?.[0] || '?'}</span>
                       </div>
                       <div style={{ flex: 1, minWidth: 0 }}>
-                        <div style={{ fontWeight: 600, fontSize: 13 }}>{split.name}</div>
+                        <div style={{ fontWeight: 600, fontSize: 13 }}>{tr(split.name, lang)}</div>
                         <div className="mw-mute" style={{ fontSize: 11 }}>{(split.exercises || []).length} exercises</div>
                       </div>
                       <button
@@ -369,7 +371,7 @@ function FriendDetail({ friendId, data, onBack, onCopySplit }) {
                         const muscleColor = MUSCLES.find(m => m.id === muscle)?.color;
                         return (
                           <span key={ex} className="mw-chip" style={{ fontSize: 10, background: muscleColor ? muscleColor + '18' : undefined, color: muscleColor || undefined }}>
-                            {ex}
+                            {tr(ex, lang)}
                           </span>
                         );
                       })}
@@ -397,7 +399,7 @@ function FriendDetail({ friendId, data, onBack, onCopySplit }) {
                       <span style={{ fontSize: 15, fontWeight: 700, color: splitColor, fontFamily: 'var(--mono)' }}>{splitIcon}</span>
                     </div>
                     <div style={{ flex: 1, minWidth: 0 }}>
-                      <div style={{ fontWeight: 600, fontSize: 13 }}>{splitName}</div>
+                      <div style={{ fontWeight: 600, fontSize: 13 }}>{tr(splitName, lang)}</div>
                       <div className="mw-mute" style={{ fontSize: 11 }}>{sess.date} · {exCount} exercises</div>
                     </div>
                     <div style={{ textAlign: 'right', flexShrink: 0 }}>

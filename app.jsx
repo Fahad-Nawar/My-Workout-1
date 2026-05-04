@@ -100,7 +100,7 @@ function useAppState() {
 }
 
 // ─────────── Mobile Shell ───────────
-function MobileApp({ theme, density, accentHue, onToggleTheme }) {
+function MobileApp({ theme, density, accentHue, onToggleTheme, lang, onToggleLang }) {
   const app = useAppState();
   const [route, setRoute] = useS({ name: 'dashboard' });
 
@@ -131,6 +131,7 @@ function MobileApp({ theme, density, accentHue, onToggleTheme }) {
       onLogout={app.logout}
       onToggleSplit={app.toggleSplit}
       onToggleTheme={onToggleTheme}
+      onToggleLang={onToggleLang}
       theme={theme}
       onGo={(n) => setRoute({ name: n })}/>;
   } else if (route.name === 'logger') {
@@ -157,30 +158,32 @@ function MobileApp({ theme, density, accentHue, onToggleTheme }) {
   const showTabs = ['dashboard', 'history', 'progress', 'social'].includes(route.name);
 
   return (
-    <div className="mw-root" data-theme={theme} data-density={density} style={{ height: '100%', display: 'flex', flexDirection: 'column', position: 'relative', ...themeStyle }}>
-      <div style={{ flex: 1, position: 'relative', overflow: 'hidden' }}>{body}</div>
-      {showTabs && (
-        <div className="mw-tabbar">
-          <button className={`mw-tab ${route.name === 'dashboard' ? 'active' : ''}`} onClick={() => setRoute({ name: 'dashboard' })}>
-            <Icon name="home" size={18}/>HOME
-          </button>
-          <button className={`mw-tab ${route.name === 'history' ? 'active' : ''}`} onClick={() => setRoute({ name: 'history' })}>
-            <Icon name="history" size={18}/>LOG
-          </button>
-          <button className={`mw-tab ${route.name === 'progress' ? 'active' : ''}`} onClick={() => setRoute({ name: 'progress' })}>
-            <Icon name="chart" size={18}/>VOLUME
-          </button>
-          <button className={`mw-tab ${route.name === 'social' ? 'active' : ''}`} onClick={() => setRoute({ name: 'social' })}>
-            <Icon name="people" size={18}/>FRIENDS
-          </button>
-        </div>
-      )}
-    </div>
+    <LangContext.Provider value={lang || 'en'}>
+      <div className="mw-root" data-theme={theme} data-density={density} dir={lang === 'ar' ? 'rtl' : 'ltr'} style={{ height: '100%', display: 'flex', flexDirection: 'column', position: 'relative', ...themeStyle }}>
+        <div style={{ flex: 1, position: 'relative', overflow: 'hidden' }}>{body}</div>
+        {showTabs && (
+          <div className="mw-tabbar">
+            <button className={`mw-tab ${route.name === 'dashboard' ? 'active' : ''}`} onClick={() => setRoute({ name: 'dashboard' })}>
+              <Icon name="home" size={18}/>HOME
+            </button>
+            <button className={`mw-tab ${route.name === 'history' ? 'active' : ''}`} onClick={() => setRoute({ name: 'history' })}>
+              <Icon name="history" size={18}/>LOG
+            </button>
+            <button className={`mw-tab ${route.name === 'progress' ? 'active' : ''}`} onClick={() => setRoute({ name: 'progress' })}>
+              <Icon name="chart" size={18}/>VOLUME
+            </button>
+            <button className={`mw-tab ${route.name === 'social' ? 'active' : ''}`} onClick={() => setRoute({ name: 'social' })}>
+              <Icon name="people" size={18}/>FRIENDS
+            </button>
+          </div>
+        )}
+      </div>
+    </LangContext.Provider>
   );
 }
 
 // ─────────── Desktop Shell ───────────
-function DesktopApp({ theme, density, onToggleTheme }) {
+function DesktopApp({ theme, density, onToggleTheme, lang, onToggleLang }) {
   const app = useAppState();
   const [route, setRoute] = useS({ name: 'dashboard' });
 
@@ -216,7 +219,8 @@ function DesktopApp({ theme, density, onToggleTheme }) {
   Object.values(app.splits).forEach(s => { if (!SPLIT_ORDER.includes(s.id)) splitsList.push(s); });
 
   return (
-    <div className="mw-root" data-theme={theme} data-density={density} style={{ height: '100%' }}>
+    <LangContext.Provider value={lang || 'en'}>
+    <div className="mw-root" data-theme={theme} data-density={density} dir={lang === 'ar' ? 'rtl' : 'ltr'} style={{ height: '100%' }}>
       <div className="mw-desktop-shell">
         <aside className="mw-side">
           <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '4px 8px 16px', borderBottom: '1px solid var(--border)', marginBottom: 12 }}>
@@ -224,6 +228,9 @@ function DesktopApp({ theme, density, onToggleTheme }) {
               <Icon name="dumbbell" size={16} color="white"/>
             </div>
             <div style={{ fontWeight: 700, fontSize: 14, flex: 1 }} className="mw-grad-text">MyWorkout</div>
+            <button className="mw-btn mw-btn-icon" onClick={onToggleLang} style={{ width: 28, height: 28, fontWeight: 700, fontSize: 12 }} aria-label="Toggle language">
+              {lang === 'ar' ? 'En' : 'ع'}
+            </button>
             <button className="mw-btn mw-btn-icon" onClick={onToggleTheme} style={{ width: 28, height: 28 }} aria-label="Toggle theme">
               <Icon name={theme === 'light' ? 'moon' : 'sun'} size={14} color="var(--text-mute)"/>
             </button>
@@ -295,6 +302,7 @@ function DesktopApp({ theme, density, onToggleTheme }) {
         </main>
       </div>
     </div>
+    </LangContext.Provider>
   );
 }
 
@@ -382,6 +390,7 @@ function DesktopDashboard({ user, splits, history, onPickSplit, onEditSplits, on
 }
 
 function DesktopMuscleVolume({ history }) {
+  const lang = React.useContext(LangContext);
   const counts = useM(() => weekSetsByMuscle(history), [history]);
   const today = new Date();
   const dow = today.getDay();
@@ -409,7 +418,7 @@ function DesktopMuscleVolume({ history }) {
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 3 }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
                   <div style={{ width: 7, height: 7, borderRadius: '50%', background: done ? '#22c55e' : m.color, flexShrink: 0 }}/>
-                  <span style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-dim)' }}>{m.label}</span>
+                  <span style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-dim)' }}>{tr(m.label, lang)}</span>
                 </div>
                 <span style={{ fontSize: 11, fontFamily: 'var(--mono)', color: done ? '#22c55e' : 'var(--text-mute)' }}>
                   {count}<span style={{ opacity: 0.5 }}>/{m.target}</span>
