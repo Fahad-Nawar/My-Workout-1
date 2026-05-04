@@ -13,12 +13,24 @@ function EditSplits({ splits, onSave, onBack }) {
   const list = Object.values(working);
   const cur = working[active];
 
+  const dragItem = useRef2(null);
+  const dragOver = useRef2(null);
+
   const addExercise = (name) => {
     if (!cur || cur.exercises.includes(name)) return;
     setWorking(w => ({ ...w, [active]: { ...w[active], exercises: [...w[active].exercises, name] } }));
   };
   const removeExercise = (name) => {
     setWorking(w => ({ ...w, [active]: { ...w[active], exercises: w[active].exercises.filter(e => e !== name) } }));
+  };
+  const moveExercise = (from, to) => {
+    if (from === to || from == null || to == null) return;
+    setWorking(w => {
+      const exs = [...w[active].exercises];
+      const [moved] = exs.splice(from, 1);
+      exs.splice(to, 0, moved);
+      return { ...w, [active]: { ...w[active], exercises: exs } };
+    });
   };
 
   return (
@@ -63,7 +75,14 @@ function EditSplits({ splits, onSave, onBack }) {
               </div>
             )}
             {cur.exercises.map((ex, i) => (
-              <div key={ex} className="mw-card" style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '10px 12px' }}>
+              <div key={ex}
+                className="mw-card"
+                draggable
+                onDragStart={() => { dragItem.current = i; }}
+                onDragEnter={() => { dragOver.current = i; }}
+                onDragOver={e => e.preventDefault()}
+                onDragEnd={() => { moveExercise(dragItem.current, dragOver.current); dragItem.current = null; dragOver.current = null; }}
+                style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '10px 12px', cursor: 'grab', userSelect: 'none' }}>
                 <div className="mw-mono mw-mute" style={{ fontSize: 11, width: 16 }}>{i + 1}</div>
                 <Icon name="grip" size={14} color="var(--text-mute)"/>
                 <div style={{ flex: 1, fontSize: 13, fontWeight: 500 }}>{tr(ex, lang)}</div>
