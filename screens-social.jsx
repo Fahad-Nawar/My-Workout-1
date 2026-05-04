@@ -131,11 +131,12 @@ function FriendCard({ friendId, data, onClick, onRemove }) {
   return (
     <div className="mw-card" style={{ marginBottom: 10, padding: 0, overflow: 'hidden', cursor: 'pointer' }} onClick={onClick}>
       <div style={{ padding: '12px 14px', display: 'flex', alignItems: 'center', gap: 12 }}>
-        <div style={{ width: 42, height: 42, borderRadius: '50%', background: colorFromName(data.name), display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 16, fontWeight: 700, color: 'white', flexShrink: 0 }}>
-          {initialsOf(data.name)}
-        </div>
+        <AvatarView name={data.name} avatarUrl={data.avatarUrl || ''} size={42}/>
         <div style={{ flex: 1, minWidth: 0 }}>
-          <div style={{ fontWeight: 700, fontSize: 14 }}>{data.name}</div>
+          <div style={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: 4 }}>
+            <span style={{ fontWeight: 700, fontSize: 14 }}>{data.name}</span>
+            <FounderBadge/>
+          </div>
           <div className="mw-mute" style={{ fontSize: 11 }}>{(data.history || []).length} sessions · {totalSets} sets this week</div>
         </div>
         <button className="mw-btn mw-btn-icon" style={{ width: 28, height: 28 }}
@@ -243,10 +244,13 @@ function AddFriendModal({ currentUserId, friendships, onClose, onSent }) {
             const isSent = sent.has(u.user_id);
             return (
               <div key={u.user_id} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '10px 0', borderBottom: '1px solid var(--border)' }}>
-                <div style={{ width: 38, height: 38, borderRadius: '50%', background: colorFromName(u.name), display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14, fontWeight: 700, color: 'white', flexShrink: 0 }}>
-                  {initialsOf(u.name)}
+                <AvatarView name={u.name} avatarUrl={u.avatarUrl || ''} size={38}/>
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+                    <span style={{ fontWeight: 600, fontSize: 13 }}>{u.name}</span>
+                    <FounderBadge/>
+                  </div>
                 </div>
-                <div style={{ flex: 1, fontWeight: 600, fontSize: 13 }}>{u.name}</div>
                 {isFriend ? (
                   <span className="mw-chip">Friends</span>
                 ) : isSent ? (
@@ -294,11 +298,12 @@ function FriendDetail({ friendId, data, onBack }) {
 
       <div className="mw-scroll" style={{ flex: 1, padding: '16px' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 16, marginBottom: 20 }}>
-          <div style={{ width: 64, height: 64, borderRadius: '50%', background: colorFromName(data.name), display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 24, fontWeight: 700, color: 'white', flexShrink: 0 }}>
-            {initialsOf(data.name)}
-          </div>
+          <AvatarView name={data.name} avatarUrl={data.avatarUrl || ''} size={64}/>
           <div>
-            <div style={{ fontWeight: 700, fontSize: 20, letterSpacing: '-0.02em' }}>{data.name}</div>
+            <div style={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: 4 }}>
+              <span style={{ fontWeight: 700, fontSize: 20, letterSpacing: '-0.02em' }}>{data.name}</span>
+              <FounderBadge/>
+            </div>
             <div className="mw-mute" style={{ fontSize: 12 }}>{history.length} sessions total</div>
           </div>
         </div>
