@@ -354,6 +354,7 @@ async function pushUserProfile(userId, { bio, avatarUrl }) {
 async function pushUserName(userId, name) {
   const { error } = await sb.from('user_data').update({ name }).eq('user_id', userId);
   if (error) throw error;
+  await sb.auth.updateUser({ data: { name } });
 }
 
 async function checkUsernameAvailable(name) {
