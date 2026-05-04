@@ -527,6 +527,7 @@ function ProfileScreen({ user, onSave, onBack }) {
   const [uploading, setUploading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [msg, setMsg] = useState('');
+  const [editingBio, setEditingBio] = useState(false);
   const fileRef = useRef();
 
   const handleAvatarChange = async (e) => {
@@ -553,6 +554,7 @@ function ProfileScreen({ user, onSave, onBack }) {
     try {
       await onSave({ bio, avatarUrl });
       setMsg('Saved');
+      setEditingBio(false);
     } catch {
       setMsg('Error saving');
     } finally {
@@ -602,35 +604,58 @@ function ProfileScreen({ user, onSave, onBack }) {
         </div>
 
         <div className="mw-card" style={{ marginBottom: 16, padding: '14px 16px' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: editingBio ? 10 : (bio ? 8 : 0) }}>
             <div>
               <div className="mw-eyebrow">Bio</div>
               <div style={{ fontSize: 11, color: 'var(--text-mute)', marginTop: 1 }}>Visible to your friends</div>
             </div>
-            <span style={{ fontSize: 11, fontFamily: 'var(--mono)', color: bio.length > 140 ? '#ef4444' : 'var(--text-mute)' }}>
-              {bio.length}/150
-            </span>
+            {editingBio ? (
+              <span style={{ fontSize: 11, fontFamily: 'var(--mono)', color: bio.length > 140 ? '#ef4444' : 'var(--text-mute)' }}>
+                {bio.length}/150
+              </span>
+            ) : (
+              <button className="mw-btn mw-btn-sm mw-btn-ghost" onClick={() => setEditingBio(true)}>
+                <Icon name="edit" size={11}/> Edit
+              </button>
+            )}
           </div>
-          <textarea
-            className="mw-input"
-            placeholder="Tell your gym story — goals, PRs, or what keeps you going..."
-            value={bio}
-            onChange={e => { if (e.target.value.length <= 150) setBio(e.target.value); }}
-            rows={4}
-            style={{ resize: 'none', lineHeight: 1.65, fontFamily: 'var(--font)', fontSize: 14, background: 'var(--surface-2)', border: '1px solid var(--border)' }}
-          />
+
+          {editingBio ? (
+            <textarea
+              className="mw-input"
+              placeholder="Tell your gym story — goals, PRs, or what keeps you going..."
+              value={bio}
+              onChange={e => { if (e.target.value.length <= 150) setBio(e.target.value); }}
+              rows={4}
+              dir="auto"
+              autoFocus
+              style={{ resize: 'none', lineHeight: 1.65, fontFamily: 'var(--font)', fontSize: 14, background: 'var(--surface-2)', border: '1px solid var(--border)' }}
+            />
+          ) : (
+            bio
+              ? <div style={{ fontSize: 14, lineHeight: 1.65, color: 'var(--text-dim)', whiteSpace: 'pre-wrap' }} dir="auto">{bio}</div>
+              : <div style={{ fontSize: 13, color: 'var(--text-mute)', fontStyle: 'italic' }}>No bio yet — tap Edit to add one</div>
+          )}
         </div>
 
-        <button
-          className="mw-btn mw-btn-primary"
-          onClick={handleSaveBio}
-          disabled={saving}
-          style={{ width: '100%', opacity: saving ? 0.6 : 1, marginBottom: 8 }}
-        >
-          {saving
-            ? <div className="mw-spinner" style={{ width: 16, height: 16, borderColor: 'rgba(255,255,255,.3)', borderTopColor: '#fff' }}/>
-            : 'Save changes'}
-        </button>
+        {editingBio && (
+          <div style={{ display: 'flex', gap: 8, marginBottom: 8 }}>
+            <button className="mw-btn" style={{ flex: 1 }}
+              onClick={() => { setBio(user.bio || ''); setEditingBio(false); }}>
+              Cancel
+            </button>
+            <button
+              className="mw-btn mw-btn-primary"
+              onClick={handleSaveBio}
+              disabled={saving}
+              style={{ flex: 2, opacity: saving ? 0.6 : 1 }}
+            >
+              {saving
+                ? <div className="mw-spinner" style={{ width: 16, height: 16, borderColor: 'rgba(255,255,255,.3)', borderTopColor: '#fff' }}/>
+                : 'Save changes'}
+            </button>
+          </div>
+        )}
 
         {msg && (
           <div style={{ textAlign: 'center', fontSize: 12, color: msg.toLowerCase().includes('error') || msg.toLowerCase().includes('fail') ? 'var(--danger)' : 'var(--success)', marginTop: 4 }}>

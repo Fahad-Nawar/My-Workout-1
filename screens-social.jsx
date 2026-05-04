@@ -199,12 +199,11 @@ function AddFriendModal({ currentUserId, friendships, onClose, onSent }) {
   ), [friendships]);
 
   useEo(() => {
-    if (!query.trim()) { setResults([]); return; }
     const t = setTimeout(async () => {
       setSearching(true);
       try { setResults(await searchUsers(query)); } catch (e) { setResults([]); }
       setSearching(false);
-    }, 350);
+    }, query ? 350 : 0);
     return () => clearTimeout(t);
   }, [query]);
 
@@ -230,14 +229,10 @@ function AddFriendModal({ currentUserId, friendships, onClose, onSent }) {
               <div className="mw-spinner" style={{ width: 20, height: 20, borderColor: 'rgba(99,102,241,.3)', borderTopColor: 'var(--accent)' }}/>
             </div>
           )}
-          {!searching && !query && (
-            <div className="mw-mute" style={{ textAlign: 'center', padding: '28px 0', fontSize: 12 }}>
-              <Icon name="user" size={28} color="var(--text-mute)"/>
-              <div style={{ marginTop: 8 }}>Type a username to search</div>
+          {!searching && results.length === 0 && (
+            <div className="mw-mute" style={{ textAlign: 'center', padding: 20, fontSize: 13 }}>
+              {query ? `No users found for "${query}"` : 'No other users found'}
             </div>
-          )}
-          {!searching && query && results.length === 0 && (
-            <div className="mw-mute" style={{ textAlign: 'center', padding: 20, fontSize: 13 }}>No users found for "{query}"</div>
           )}
           {results.map(u => {
             const isFriend = existingSet.has(u.user_id);
@@ -297,22 +292,19 @@ function FriendDetail({ friendId, data, onBack }) {
       </div>
 
       <div className="mw-scroll" style={{ flex: 1, padding: '16px' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 16, marginBottom: data.bio ? 12 : 20 }}>
-          <AvatarView name={data.name} avatarUrl={data.avatarUrl || ''} size={64}/>
-          <div>
-            <div style={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: 4 }}>
-              <span style={{ fontWeight: 700, fontSize: 20, letterSpacing: '-0.02em' }}>{data.name}</span>
-              <FounderBadge/>
+        <div style={{ textAlign: 'center', marginBottom: 20 }}>
+          <AvatarView name={data.name} avatarUrl={data.avatarUrl || ''} size={72}/>
+          <div style={{ marginTop: 10, display: 'flex', alignItems: 'center', justifyContent: 'center', flexWrap: 'wrap', gap: 6 }}>
+            <span style={{ fontWeight: 700, fontSize: 20, letterSpacing: '-0.02em' }}>{data.name}</span>
+            <FounderBadge/>
+          </div>
+          <div className="mw-mute" style={{ fontSize: 12, marginTop: 2 }}>{history.length} sessions total</div>
+          {data.bio ? (
+            <div style={{ marginTop: 10, background: 'var(--surface-2)', borderRadius: 12, padding: '10px 14px', textAlign: 'left', borderLeft: '3px solid var(--accent)' }}>
+              <div style={{ fontSize: 13, lineHeight: 1.65, color: 'var(--text-dim)', whiteSpace: 'pre-wrap' }} dir="auto">{data.bio}</div>
             </div>
-            <div className="mw-mute" style={{ fontSize: 12 }}>{history.length} sessions total</div>
-          </div>
+          ) : null}
         </div>
-
-        {data.bio ? (
-          <div style={{ background: 'var(--surface-2)', borderRadius: 12, padding: '10px 14px', marginBottom: 20, borderLeft: '3px solid var(--accent)' }}>
-            <div style={{ fontSize: 13, lineHeight: 1.65, color: 'var(--text-dim)' }}>{data.bio}</div>
-          </div>
-        ) : null}
 
         <MuscleVolumePanel history={history}/>
 
