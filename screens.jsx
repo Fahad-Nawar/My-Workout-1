@@ -125,7 +125,7 @@ function Dashboard({ user, splits, history, onPickSplit, onEditSplits, onLogout,
           <AvatarView name={user.name} avatarUrl={user.avatarUrl} size={32} style={{ cursor: 'pointer' }}/>
         </button>
         <div style={{ flex: 1 }}>
-          <div className="mw-eyebrow">{lang === 'ar' ? 'مرحباً،' : 'welcome,'}</div>
+          <div className="mw-eyebrow">{lang === 'ar' ? 'الله حيه،' : 'welcome,'}</div>
           <div style={{ fontWeight: 700, fontSize: 17 }} dir={lang === 'ar' ? 'ltr' : undefined}>{user.name}</div>
         </div>
         <button className="mw-btn mw-btn-icon" onClick={onToggleLang} aria-label="Toggle language"

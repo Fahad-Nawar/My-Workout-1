@@ -323,7 +323,7 @@ function DesktopDashboard({ user, splits, history, onPickSplit, onEditSplits, on
           <div className="mw-eyebrow" style={{ marginBottom: 6 }}>{todayStr()}</div>
           <h1 className="mw-h1" style={{ fontSize: 30, lineHeight: 1.25, paddingBottom: 6, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
             {isAr ? (
-              <>أهلاً <span className="mw-grad-text" style={{ paddingInline: 2 }} dir="ltr">{user.name}</span> <span style={{ unicodeBidi: 'isolate' }}>— لنرفع الأثقال</span></>
+              <>الله حيه <span className="mw-grad-text" style={{ paddingInline: 2 }} dir="ltr">{user.name}</span> <span style={{ unicodeBidi: 'isolate' }}>— شبووف</span></>
             ) : (
               <>Hey <span className="mw-grad-text" style={{ paddingRight: 2 }}>{user.name}</span> — let's lift.</>
             )}
