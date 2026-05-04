@@ -57,6 +57,16 @@
       };
 
       useE(() => {
+        const { data: { subscription } } = sb.auth.onAuthStateChange((event) => {
+          if (event === 'SIGNED_OUT') {
+            setLang('en');
+            localStorage.setItem('mw-lang', 'en');
+          }
+        });
+        return () => subscription.unsubscribe();
+      }, []);
+
+      useE(() => {
         document.body.style.background = theme === 'light' ? '#f7f6f3' : '#0a0a0c';
       }, [theme]);
 
