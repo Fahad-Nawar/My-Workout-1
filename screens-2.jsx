@@ -199,6 +199,56 @@ function History({ history, splits, onBack, onDelete }) {
   );
 }
 
+// ────────────────────────── Muscle Volume Panel ──────────────────────────
+function MuscleVolumePanel({ history }) {
+  const counts = useMemo2(() => weekSetsByMuscle(history), [history]);
+  const today = new Date();
+  const dow = today.getDay();
+  const daysLeft = dow === 0 ? 0 : 7 - dow;
+
+  return (
+    <div className="mw-card" style={{ marginBottom: 20 }}>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14 }}>
+        <div>
+          <div className="mw-eyebrow">
+            Mon – Sun · {daysLeft === 0 ? 'Resets tomorrow' : `${daysLeft} day${daysLeft === 1 ? '' : 's'} left`}
+          </div>
+          <div style={{ fontWeight: 700, fontSize: 17 }}>Weekly Volume</div>
+        </div>
+        <Icon name="flame" size={18} color="var(--accent)"/>
+      </div>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+        {MUSCLES.map(m => {
+          const count = counts[m.id] || 0;
+          const pct = Math.min(count / m.target, 1);
+          const done = count >= m.target;
+          return (
+            <div key={m.id}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                  <div style={{ width: 8, height: 8, borderRadius: '50%', background: done ? '#22c55e' : m.color, flexShrink: 0 }}/>
+                  <span style={{ fontSize: 13, fontWeight: 600 }}>{m.label}</span>
+                </div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                  <span style={{ fontSize: 13, fontFamily: 'var(--mono)', color: done ? '#22c55e' : 'var(--text)', fontWeight: 700 }}>{count}</span>
+                  <span style={{ fontSize: 11, color: 'var(--text-mute)', fontFamily: 'var(--mono)' }}>/ {m.target}</span>
+                  {done && <span className="mw-chip" style={{ background: '#22c55e22', color: '#22c55e', fontSize: 9, padding: '2px 6px' }}>done</span>}
+                </div>
+              </div>
+              <div style={{ height: 6, background: 'var(--border)', borderRadius: 3, overflow: 'hidden' }}>
+                <div style={{ height: '100%', width: `${pct * 100}%`, background: done ? '#22c55e' : m.color, borderRadius: 3, transition: 'width .4s' }}/>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+      <div className="mw-mute" style={{ fontSize: 11, marginTop: 12, paddingTop: 10, borderTop: '1px solid var(--border)' }}>
+        Weekly minimum sets per muscle. Resets every Monday.
+      </div>
+    </div>
+  );
+}
+
 // ────────────────────────── Progress (chart) ──────────────────────────
 function Progress({ history, splits, onBack }) {
   const allExercises = useMemo2(() => {
@@ -233,10 +283,11 @@ function Progress({ history, splits, onBack }) {
       </div>
 
       <div className="mw-scroll" style={{ flex: 1, padding: '16px' }}>
+        <MuscleVolumePanel history={history}/>
         {allExercises.length === 0 ? (
           <div className="mw-mute" style={{ textAlign: 'center', padding: 40, fontSize: 13 }}>
             <Icon name="chart" size={32} color="var(--text-mute)"/>
-            <div style={{ marginTop: 8 }}>Log a session to see progress.</div>
+            <div style={{ marginTop: 8 }}>Log a session to see your exercise progress.</div>
           </div>
         ) : (
           <>

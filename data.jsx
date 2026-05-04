@@ -48,6 +48,73 @@ const EXERCISE_POOL = [
   'Preacher Curl','Concentration Curl','Hip Thrust','Glute Kickback','Wrist',
 ];
 
+const MUSCLE_MAP = {
+  'Chest Fly': 'chest', 'Incline Chest Press': 'chest', 'Bench Press': 'chest',
+  'Shoulder Press': 'shoulder', 'Lateral Raises': 'shoulder', 'Front Raises': 'shoulder',
+  'Rear Shoulder': 'shoulder', 'Face Pull': 'shoulder',
+  'Shrugs': 'back', 'Upper Back': 'back', 'Lat Pulldown': 'back',
+  'Lat Row Single': 'back', 'Cable Row': 'back',
+  'Triceps': 'triceps', 'Tricep Pushdown': 'triceps',
+  'Overhead Tricep Ext.': 'triceps', 'Dips': 'triceps',
+  'Hammer Curl': 'biceps', 'Bicep Curl': 'biceps', 'Preacher Curl': 'biceps',
+  'Concentration Curl': 'biceps', 'Wrist': 'biceps',
+  'Abs': 'abs', 'Cable Crunch': 'abs', 'Hanging Leg Raise': 'abs',
+  'Leg Press': 'legs', 'Leg Extension': 'legs', 'Adductors': 'legs', 'Abductors': 'legs',
+  'Squat': 'legs', 'Bulgarian Split Squat': 'legs',
+  'Hamstrings': 'legs', 'Hamstring Curl': 'legs', 'Romanian Deadlift': 'legs',
+  'Hip Thrust': 'legs', 'Glute Kickback': 'legs',
+  'Calf': 'calf', 'Standing Calf': 'calf',
+};
+
+const MUSCLES = [
+  { id: 'chest',    label: 'Chest',    target: 15, color: '#6366f1' },
+  { id: 'shoulder', label: 'Shoulder', target: 12, color: '#a855f7' },
+  { id: 'back',     label: 'Back',     target: 15, color: '#06b6d4' },
+  { id: 'biceps',   label: 'Biceps',   target: 12, color: '#10b981' },
+  { id: 'triceps',  label: 'Triceps',  target: 10, color: '#f59e0b' },
+  { id: 'legs',     label: 'Legs',     target: 15, color: '#ef4444' },
+  { id: 'calf',     label: 'Calf',     target: 10, color: '#ec4899' },
+  { id: 'abs',      label: 'Abs',      target: 8,  color: '#8b5cf6' },
+];
+
+function parseDateStr(str) {
+  const months = { Jan:0,Feb:1,Mar:2,Apr:3,May:4,Jun:5,Jul:6,Aug:7,Sep:8,Oct:9,Nov:10,Dec:11 };
+  const parts = str.replace(/,/g, '').split(/\s+/);
+  const dayPart = parts.find(p => /^\d{1,2}$/.test(p));
+  const monPart = parts.find(p => months[p] !== undefined);
+  const yearPart = parts.find(p => /^\d{4}$/.test(p));
+  if (!dayPart || monPart === undefined || !yearPart) return null;
+  return new Date(parseInt(yearPart), months[monPart], parseInt(dayPart));
+}
+
+function weekSetsByMuscle(history) {
+  const today = new Date();
+  const dow = today.getDay();
+  const monday = new Date(today);
+  monday.setDate(today.getDate() - (dow === 0 ? 6 : dow - 1));
+  monday.setHours(0, 0, 0, 0);
+  const sunday = new Date(monday);
+  sunday.setDate(monday.getDate() + 6);
+  sunday.setHours(23, 59, 59, 999);
+
+  const counts = {};
+  MUSCLES.forEach(m => { counts[m.id] = 0; });
+
+  history.forEach(sess => {
+    const d = parseDateStr(sess.date);
+    if (d && d >= monday && d <= sunday) {
+      sess.exercises?.forEach(ex => {
+        const muscle = MUSCLE_MAP[ex.name];
+        if (muscle && counts[muscle] !== undefined) {
+          counts[muscle] += ex.sets?.length || 0;
+        }
+      });
+    }
+  });
+
+  return counts;
+}
+
 // ────────────────────────── auth ──────────────────────────
 function usernameToEmail(username) {
   return username.toLowerCase().replace(/[^a-z0-9]/g, '_') + '@myworkout.app';
@@ -125,9 +192,10 @@ function seedDemoSession(userId, splitId, exercises, daysAgo) {
 }
 
 Object.assign(window, {
-  DEFAULT_SPLITS, SPLIT_ORDER, EXERCISE_POOL,
+  DEFAULT_SPLITS, SPLIT_ORDER, EXERCISE_POOL, MUSCLE_MAP, MUSCLES,
   sb,
   authSignUp, authSignIn, authSignOut,
   fetchUserData, pushUserSplits, pushUserHistory,
   todayStr, makeId, defaultUserSplits, seedDemoSession,
+  parseDateStr, weekSetsByMuscle,
 });

@@ -110,6 +110,8 @@ function Dashboard({ user, splits, history, onPickSplit, onEditSplits, onLogout,
         </div>
       </div>
 
+      <MuscleVolumeCard history={history}/>
+
       <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', marginBottom: 10 }}>
         <h2 className="mw-h2">Your splits</h2>
         <div style={{ display: 'flex', gap: 6 }}>
@@ -220,6 +222,40 @@ function SplitCard({ split, sessions, todayDone, onClick }) {
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
         <span className="mw-pill">{split.exercises.length} ex</span>
         <span className="mw-mute" style={{ fontSize: 11, fontFamily: 'var(--mono)' }}>{sessions} logged</span>
+      </div>
+    </div>
+  );
+}
+
+function MuscleVolumeCard({ history }) {
+  const counts = useMemo(() => weekSetsByMuscle(history), [history]);
+  const totalSets = MUSCLES.reduce((a, m) => a + (counts[m.id] || 0), 0);
+  return (
+    <div className="mw-card" style={{ marginBottom: 16 }}>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
+        <div>
+          <div className="mw-eyebrow">This week</div>
+          <div style={{ fontWeight: 700, fontSize: 15 }}>Weekly Volume</div>
+        </div>
+        <span className="mw-chip"><Icon name="flame" size={10}/> {totalSets} sets</span>
+      </div>
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
+        {MUSCLES.map(m => {
+          const count = counts[m.id] || 0;
+          const pct = Math.min(count / m.target, 1);
+          const done = count >= m.target;
+          return (
+            <div key={m.id}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 3 }}>
+                <span style={{ fontSize: 11, fontWeight: 600, color: 'var(--text-dim)' }}>{m.label}</span>
+                <span style={{ fontSize: 11, fontFamily: 'var(--mono)', color: done ? '#22c55e' : 'var(--text-mute)' }}>{count}/{m.target}</span>
+              </div>
+              <div style={{ height: 4, background: 'var(--border)', borderRadius: 2, overflow: 'hidden' }}>
+                <div style={{ height: '100%', width: `${pct * 100}%`, background: done ? '#22c55e' : m.color, borderRadius: 2, transition: 'width .4s' }}/>
+              </div>
+            </div>
+          );
+        })}
       </div>
     </div>
   );

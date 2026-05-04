@@ -306,30 +306,37 @@ function DesktopDashboard({ user, splits, history, onPickSplit, onEditSplits, on
         </div>
       </div>
 
-      <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', marginBottom: 12 }}>
-        <h2 className="mw-h2">{splitsList.length === 6 ? 'Recommended 6-day rotation' : 'Your splits'}</h2>
-        <div style={{ display: 'flex', gap: 6 }}>
-          <button className="mw-btn mw-btn-sm" onClick={() => setShowPicker(true)}>
-            <Icon name="plus" size={12}/> Add split
-          </button>
-          <button className="mw-btn mw-btn-sm mw-btn-ghost" onClick={onEditSplits}>
-            <Icon name="edit" size={12}/> Edit splits
-          </button>
-        </div>
-      </div>
-      <div className="mw-eyebrow" style={{ marginBottom: 10 }}>{splitsList.length} active · {availableList.length} more available</div>
-
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 12 }}>
-        {splitsList.map((s) => (
-          <SplitCard key={s.id} split={s} sessions={history.filter(h => h.day === s.id).length}
-            todayDone={todaySessions.some(t => t.day === s.id)}
-            onClick={() => onPickSplit(s.id)} />
-        ))}
-        {splitsList.length === 0 && (
-          <div className="mw-mute" style={{ gridColumn: '1 / -1', textAlign: 'center', padding: 40, fontSize: 13, border: '1px dashed var(--border)', borderRadius: 12 }}>
-            No splits yet — click <strong>Add split</strong> to get started.
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 280px', gap: 24, alignItems: 'start' }}>
+        <div>
+          <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', marginBottom: 12 }}>
+            <h2 className="mw-h2">{splitsList.length === 6 ? 'Recommended 6-day rotation' : 'Your splits'}</h2>
+            <div style={{ display: 'flex', gap: 6 }}>
+              <button className="mw-btn mw-btn-sm" onClick={() => setShowPicker(true)}>
+                <Icon name="plus" size={12}/> Add split
+              </button>
+              <button className="mw-btn mw-btn-sm mw-btn-ghost" onClick={onEditSplits}>
+                <Icon name="edit" size={12}/> Edit splits
+              </button>
+            </div>
           </div>
-        )}
+          <div className="mw-eyebrow" style={{ marginBottom: 10 }}>{splitsList.length} active · {availableList.length} more available</div>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 12 }}>
+            {splitsList.map((s) => (
+              <SplitCard key={s.id} split={s} sessions={history.filter(h => h.day === s.id).length}
+                todayDone={todaySessions.some(t => t.day === s.id)}
+                onClick={() => onPickSplit(s.id)} />
+            ))}
+            {splitsList.length === 0 && (
+              <div className="mw-mute" style={{ gridColumn: '1 / -1', textAlign: 'center', padding: 40, fontSize: 13, border: '1px dashed var(--border)', borderRadius: 12 }}>
+                No splits yet — click <strong>Add split</strong> to get started.
+              </div>
+            )}
+          </div>
+        </div>
+
+        <div>
+          <DesktopMuscleVolume history={history}/>
+        </div>
       </div>
 
       {showPicker && (
@@ -339,6 +346,54 @@ function DesktopDashboard({ user, splits, history, onPickSplit, onEditSplits, on
           onClose={() => setShowPicker(false)}
           onCreateCustom={() => { setShowPicker(false); onEditSplits(); }}/>
       )}
+    </div>
+  );
+}
+
+function DesktopMuscleVolume({ history }) {
+  const counts = useM(() => weekSetsByMuscle(history), [history]);
+  const today = new Date();
+  const dow = today.getDay();
+  const daysLeft = dow === 0 ? 0 : 7 - dow;
+  const totalSets = MUSCLES.reduce((a, m) => a + (counts[m.id] || 0), 0);
+
+  return (
+    <div className="mw-card">
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
+        <div>
+          <div className="mw-eyebrow">
+            {daysLeft === 0 ? 'Resets tomorrow' : `${daysLeft} day${daysLeft === 1 ? '' : 's'} left`}
+          </div>
+          <div style={{ fontWeight: 700, fontSize: 15 }}>Weekly Volume</div>
+        </div>
+        <span className="mw-chip"><Icon name="flame" size={10}/> {totalSets}</span>
+      </div>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 9 }}>
+        {MUSCLES.map(m => {
+          const count = counts[m.id] || 0;
+          const pct = Math.min(count / m.target, 1);
+          const done = count >= m.target;
+          return (
+            <div key={m.id}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 3 }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                  <div style={{ width: 7, height: 7, borderRadius: '50%', background: done ? '#22c55e' : m.color, flexShrink: 0 }}/>
+                  <span style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-dim)' }}>{m.label}</span>
+                </div>
+                <span style={{ fontSize: 11, fontFamily: 'var(--mono)', color: done ? '#22c55e' : 'var(--text-mute)' }}>
+                  {count}<span style={{ opacity: 0.5 }}>/{m.target}</span>
+                </span>
+              </div>
+              <div style={{ height: 4, background: 'var(--border)', borderRadius: 2, overflow: 'hidden' }}>
+                <div style={{ height: '100%', width: `${pct * 100}%`, background: done ? '#22c55e' : m.color, borderRadius: 2, transition: 'width .4s' }}/>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+      <div className="mw-mute" style={{ fontSize: 10, marginTop: 10, paddingTop: 8, borderTop: '1px solid var(--border)' }}>
+        Target sets per muscle · resets Monday
+      </div>
     </div>
   );
 }
