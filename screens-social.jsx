@@ -297,7 +297,7 @@ function FriendDetail({ friendId, data, onBack }) {
       </div>
 
       <div className="mw-scroll" style={{ flex: 1, padding: '16px' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 16, marginBottom: 20 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 16, marginBottom: data.bio ? 12 : 20 }}>
           <AvatarView name={data.name} avatarUrl={data.avatarUrl || ''} size={64}/>
           <div>
             <div style={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: 4 }}>
@@ -307,6 +307,12 @@ function FriendDetail({ friendId, data, onBack }) {
             <div className="mw-mute" style={{ fontSize: 12 }}>{history.length} sessions total</div>
           </div>
         </div>
+
+        {data.bio ? (
+          <div style={{ background: 'var(--surface-2)', borderRadius: 12, padding: '10px 14px', marginBottom: 20, borderLeft: '3px solid var(--accent)' }}>
+            <div style={{ fontSize: 13, lineHeight: 1.65, color: 'var(--text-dim)' }}>{data.bio}</div>
+          </div>
+        ) : null}
 
         <MuscleVolumePanel history={history}/>
 

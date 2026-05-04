@@ -173,11 +173,11 @@ async function removeFriend(friendshipId) {
 
 async function fetchFriendData(friendId) {
   const { data } = await sb.from('user_data')
-    .select('name, history, splits, avatar_url')
+    .select('name, history, splits, avatar_url, bio')
     .eq('user_id', friendId)
     .single();
   if (!data) return null;
-  return { ...data, avatarUrl: data.avatar_url || '' };
+  return { ...data, avatarUrl: data.avatar_url || '', bio: data.bio || '' };
 }
 
 // ────────────────────────── auth ──────────────────────────

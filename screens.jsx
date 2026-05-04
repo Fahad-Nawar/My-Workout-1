@@ -601,15 +601,23 @@ function ProfileScreen({ user, onSave, onBack }) {
           </div>
         </div>
 
-        <div style={{ marginBottom: 20 }}>
-          <div className="mw-eyebrow" style={{ marginBottom: 8 }}>Bio</div>
+        <div className="mw-card" style={{ marginBottom: 16, padding: '14px 16px' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
+            <div>
+              <div className="mw-eyebrow">Bio</div>
+              <div style={{ fontSize: 11, color: 'var(--text-mute)', marginTop: 1 }}>Visible to your friends</div>
+            </div>
+            <span style={{ fontSize: 11, fontFamily: 'var(--mono)', color: bio.length > 140 ? '#ef4444' : 'var(--text-mute)' }}>
+              {bio.length}/150
+            </span>
+          </div>
           <textarea
             className="mw-input"
-            placeholder="Tell people about yourself…"
+            placeholder="Tell your gym story — goals, PRs, or what keeps you going..."
             value={bio}
-            onChange={e => setBio(e.target.value)}
-            rows={3}
-            style={{ resize: 'none', lineHeight: 1.6, fontFamily: 'var(--font)' }}
+            onChange={e => { if (e.target.value.length <= 150) setBio(e.target.value); }}
+            rows={4}
+            style={{ resize: 'none', lineHeight: 1.65, fontFamily: 'var(--font)', fontSize: 14, background: 'var(--surface-2)', border: '1px solid var(--border)' }}
           />
         </div>
 
@@ -617,13 +625,15 @@ function ProfileScreen({ user, onSave, onBack }) {
           className="mw-btn mw-btn-primary"
           onClick={handleSaveBio}
           disabled={saving}
-          style={{ width: '100%', opacity: saving ? 0.6 : 1 }}
+          style={{ width: '100%', opacity: saving ? 0.6 : 1, marginBottom: 8 }}
         >
-          {saving ? <div className="mw-spinner"/> : 'Save changes'}
+          {saving
+            ? <div className="mw-spinner" style={{ width: 16, height: 16, borderColor: 'rgba(255,255,255,.3)', borderTopColor: '#fff' }}/>
+            : 'Save changes'}
         </button>
 
         {msg && (
-          <div style={{ textAlign: 'center', fontSize: 12, color: 'var(--success)', marginTop: 12 }}>
+          <div style={{ textAlign: 'center', fontSize: 12, color: msg.toLowerCase().includes('error') || msg.toLowerCase().includes('fail') ? 'var(--danger)' : 'var(--success)', marginTop: 4 }}>
             {msg}
           </div>
         )}
