@@ -520,9 +520,122 @@ function ExerciseCard({ name, index, sets, expanded, onToggle, onUpdate, onAdd, 
   );
 }
 
+// ──────────────────────────── Profile Screen ────────────────────────────
+function ProfileScreen({ user, onSave, onBack }) {
+  const [bio, setBio] = useState(user.bio || '');
+  const [avatarUrl, setAvatarUrl] = useState(user.avatarUrl || '');
+  const [uploading, setUploading] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [msg, setMsg] = useState('');
+  const fileRef = useRef();
+
+  const handleAvatarChange = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setUploading(true);
+    setMsg('');
+    try {
+      const url = await uploadAvatar(user.id, file);
+      setAvatarUrl(url);
+      await onSave({ bio, avatarUrl: url });
+      setMsg('Photo updated');
+    } catch {
+      setMsg('Upload failed — check Supabase Storage bucket "avatars" is public');
+    } finally {
+      setUploading(false);
+      setTimeout(() => setMsg(''), 3000);
+    }
+  };
+
+  const handleSaveBio = async () => {
+    setSaving(true);
+    setMsg('');
+    try {
+      await onSave({ bio, avatarUrl });
+      setMsg('Saved');
+    } catch {
+      setMsg('Error saving');
+    } finally {
+      setSaving(false);
+      setTimeout(() => setMsg(''), 2000);
+    }
+  };
+
+  return (
+    <div className="mw-fade-in" style={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
+      <div style={{ padding: '12px 16px', display: 'flex', alignItems: 'center', gap: 10, borderBottom: '1px solid var(--border)' }}>
+        <button className="mw-btn mw-btn-icon" onClick={onBack}>
+          <Icon name="arrow-left" size={16}/>
+        </button>
+        <div style={{ flex: 1 }}>
+          <div className="mw-eyebrow">Account</div>
+          <div style={{ fontWeight: 700, fontSize: 16 }}>Profile</div>
+        </div>
+      </div>
+
+      <div className="mw-scroll" style={{ flex: 1, padding: '28px 16px 40px' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', marginBottom: 28 }}>
+          <div style={{ position: 'relative', cursor: 'pointer' }}
+            onClick={() => !uploading && fileRef.current?.click()}>
+            <AvatarView name={user.name} avatarUrl={avatarUrl} size={80}/>
+            <div style={{
+              position: 'absolute', bottom: 2, right: 2,
+              width: 26, height: 26, borderRadius: '50%',
+              background: 'var(--accent)', display: 'flex',
+              alignItems: 'center', justifyContent: 'center',
+              border: '2px solid var(--bg)',
+            }}>
+              {uploading
+                ? <div className="mw-spinner" style={{ width: 12, height: 12, borderColor: 'rgba(255,255,255,.3)', borderTopColor: '#fff' }}/>
+                : <Icon name="edit" size={11} color="white"/>}
+            </div>
+          </div>
+          <input type="file" accept="image/*" ref={fileRef}
+            onChange={handleAvatarChange} style={{ display: 'none' }}/>
+          <div style={{ marginTop: 14, display: 'flex', alignItems: 'center' }}>
+            <div style={{ fontWeight: 700, fontSize: 22 }}>{user.name}</div>
+            <FounderBadge/>
+          </div>
+          <div className="mw-mute" style={{ fontSize: 12, marginTop: 3 }}>
+            {user.sessionCount} sessions
+          </div>
+        </div>
+
+        <div style={{ marginBottom: 20 }}>
+          <div className="mw-eyebrow" style={{ marginBottom: 8 }}>Bio</div>
+          <textarea
+            className="mw-input"
+            placeholder="Tell people about yourself…"
+            value={bio}
+            onChange={e => setBio(e.target.value)}
+            rows={3}
+            style={{ resize: 'none', lineHeight: 1.6, fontFamily: 'var(--font)' }}
+          />
+        </div>
+
+        <button
+          className="mw-btn mw-btn-primary"
+          onClick={handleSaveBio}
+          disabled={saving}
+          style={{ width: '100%', opacity: saving ? 0.6 : 1 }}
+        >
+          {saving ? <div className="mw-spinner"/> : 'Save changes'}
+        </button>
+
+        {msg && (
+          <div style={{ textAlign: 'center', fontSize: 12, color: 'var(--success)', marginTop: 12 }}>
+            {msg}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
 window.LoginScreen = LoginScreen;
 window.Dashboard = Dashboard;
 window.Logger = Logger;
 window.SplitPicker = SplitPicker;
 window.FounderBadge = FounderBadge;
 window.AvatarView = AvatarView;
+window.ProfileScreen = ProfileScreen;
