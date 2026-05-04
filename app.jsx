@@ -164,16 +164,16 @@ function MobileApp({ theme, density, accentHue, onToggleTheme, lang, onToggleLan
         {showTabs && (
           <div className="mw-tabbar">
             <button className={`mw-tab ${route.name === 'dashboard' ? 'active' : ''}`} onClick={() => setRoute({ name: 'dashboard' })}>
-              <Icon name="home" size={18}/>HOME
+              <Icon name="home" size={18}/>{tr('HOME', lang)}
             </button>
             <button className={`mw-tab ${route.name === 'history' ? 'active' : ''}`} onClick={() => setRoute({ name: 'history' })}>
-              <Icon name="history" size={18}/>LOG
+              <Icon name="history" size={18}/>{tr('LOG', lang)}
             </button>
             <button className={`mw-tab ${route.name === 'progress' ? 'active' : ''}`} onClick={() => setRoute({ name: 'progress' })}>
-              <Icon name="chart" size={18}/>VOLUME
+              <Icon name="chart" size={18}/>{tr('VOLUME', lang)}
             </button>
             <button className={`mw-tab ${route.name === 'social' ? 'active' : ''}`} onClick={() => setRoute({ name: 'social' })}>
-              <Icon name="people" size={18}/>FRIENDS
+              <Icon name="people" size={18}/>{tr('FRIENDS', lang)}
             </button>
           </div>
         )}
@@ -249,18 +249,18 @@ function DesktopApp({ theme, density, onToggleTheme, lang, onToggleLang }) {
 
           {navItems.map(n => (
             <div key={n.id} className={`mw-side-item ${route.name === n.id ? 'active' : ''}`} onClick={() => setRoute({ name: n.id })}>
-              <Icon name={n.icon} size={15}/> {n.label}
+              <Icon name={n.icon} size={15}/> {tr(n.label, lang)}
             </div>
           ))}
 
           <div style={{ marginTop: 'auto', padding: '12px 8px 4px', borderTop: '1px solid var(--border)' }}>
-            <div className="mw-eyebrow" style={{ marginBottom: 8 }}>Quick start</div>
+            <div className="mw-eyebrow" style={{ marginBottom: 8 }}>{tr('Quick start', lang)}</div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
               {splitsList.slice(0, 6).map(s => (
                 <button key={s.id} className="mw-side-item" style={{ padding: '6px 10px' }}
                   onClick={() => setRoute({ name: 'logger', splitId: s.id })}>
                   <span style={{ width: 18, height: 18, borderRadius: 5, background: (s.color || '#6366f1') + '22', color: s.color || 'var(--accent)', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', fontSize: 10, fontWeight: 700, fontFamily: 'var(--mono)' }}>{s.icon || s.name[0]}</span>
-                  <span style={{ fontSize: 12 }}>{s.name}</span>
+                  <span style={{ fontSize: 12 }}>{tr(s.name, lang)}</span>
                 </button>
               ))}
             </div>
@@ -307,6 +307,8 @@ function DesktopApp({ theme, density, onToggleTheme, lang, onToggleLang }) {
 }
 
 function DesktopDashboard({ user, splits, history, onPickSplit, onEditSplits, onGo, onToggleSplit }) {
+  const lang = React.useContext(LangContext);
+  const isAr = lang === 'ar';
   const allList = SPLIT_ORDER.map(id => splits[id]).filter(Boolean);
   Object.values(splits).forEach(s => { if (!SPLIT_ORDER.includes(s.id)) allList.push(s); });
   const splitsList = allList.filter(s => s.added !== false);
@@ -319,46 +321,56 @@ function DesktopDashboard({ user, splits, history, onPickSplit, onEditSplits, on
       <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', gap: 16, marginBottom: 32 }}>
         <div style={{ flex: 1, minWidth: 0 }}>
           <div className="mw-eyebrow" style={{ marginBottom: 6 }}>{todayStr()}</div>
-          <h1 className="mw-h1" style={{ fontSize: 30, lineHeight: 1.25, paddingBottom: 6, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>Hey <span className="mw-grad-text" style={{ paddingRight: 2 }}>{user.name}</span> — let's lift.</h1>
+          <h1 className="mw-h1" style={{ fontSize: 30, lineHeight: 1.25, paddingBottom: 6, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+            {isAr ? (
+              <>أهلاً <span className="mw-grad-text" style={{ paddingInline: 2 }} dir="ltr">{user.name}</span> <span style={{ unicodeBidi: 'isolate' }}>— لنرفع الأثقال</span></>
+            ) : (
+              <>Hey <span className="mw-grad-text" style={{ paddingRight: 2 }}>{user.name}</span> — let's lift.</>
+            )}
+          </h1>
         </div>
         <button className="mw-btn mw-btn-primary" onClick={() => onGo('progress')} style={{ flexShrink: 0 }}>
-          <Icon name="chart" size={14} color="white"/> View progress
+          <Icon name="chart" size={14} color="white"/> {tr('View progress', lang)}
         </button>
       </div>
 
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 12, marginBottom: 28 }}>
         <div className="mw-stat">
           <div className="mw-stat-num mw-grad-text">{history.length}</div>
-          <div className="mw-stat-lbl">Total Sessions</div>
+          <div className="mw-stat-lbl">{tr('Total Sessions', lang)}</div>
         </div>
         <div className="mw-stat">
           <div className="mw-stat-num">{streakOf(history)}</div>
-          <div className="mw-stat-lbl">Current Streak</div>
+          <div className="mw-stat-lbl">{tr('Current Streak', lang)}</div>
         </div>
         <div className="mw-stat">
           <div className="mw-stat-num">{todaySessions.length}</div>
-          <div className="mw-stat-lbl">Today</div>
+          <div className="mw-stat-lbl">{tr('Today', lang)}</div>
         </div>
         <div className="mw-stat">
           <div className="mw-stat-num">{splitsList.length}</div>
-          <div className="mw-stat-lbl">Active Splits</div>
+          <div className="mw-stat-lbl">{tr('Active Splits', lang)}</div>
         </div>
       </div>
 
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 280px', gap: 24, alignItems: 'start' }}>
         <div>
           <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', marginBottom: 12 }}>
-            <h2 className="mw-h2">{splitsList.length === 6 ? 'Recommended 6-day rotation' : 'Your splits'}</h2>
+            <h2 className="mw-h2">{tr(splitsList.length === 6 ? 'Recommended 6-day rotation' : 'Your splits', lang)}</h2>
             <div style={{ display: 'flex', gap: 6 }}>
               <button className="mw-btn mw-btn-sm" onClick={() => setShowPicker(true)}>
-                <Icon name="plus" size={12}/> Add split
+                <Icon name="plus" size={12}/> {tr('Add split', lang)}
               </button>
               <button className="mw-btn mw-btn-sm mw-btn-ghost" onClick={onEditSplits}>
-                <Icon name="edit" size={12}/> Edit splits
+                <Icon name="edit" size={12}/> {tr('Edit splits', lang)}
               </button>
             </div>
           </div>
-          <div className="mw-eyebrow" style={{ marginBottom: 10 }}>{splitsList.length} active · {availableList.length} more available</div>
+          <div className="mw-eyebrow" style={{ marginBottom: 10 }}>
+            {isAr
+              ? <>{splitsList.length} نشط · {availableList.length} متاح أيضاً</>
+              : <>{splitsList.length} active · {availableList.length} more available</>}
+          </div>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 12 }}>
             {splitsList.map((s) => (
               <SplitCard key={s.id} split={s} sessions={history.filter(h => h.day === s.id).length}
@@ -367,7 +379,9 @@ function DesktopDashboard({ user, splits, history, onPickSplit, onEditSplits, on
             ))}
             {splitsList.length === 0 && (
               <div className="mw-mute" style={{ gridColumn: '1 / -1', textAlign: 'center', padding: 40, fontSize: 13, border: '1px dashed var(--border)', borderRadius: 12 }}>
-                No splits yet — click <strong>Add split</strong> to get started.
+                {isAr
+                  ? <>لا توجد برامج بعد — اضغط <strong>إضافة برنامج</strong> للبدء.</>
+                  : <>No splits yet — click <strong>Add split</strong> to get started.</>}
               </div>
             )}
           </div>
@@ -402,9 +416,13 @@ function DesktopMuscleVolume({ history }) {
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
         <div>
           <div className="mw-eyebrow">
-            {daysLeft === 0 ? 'Resets tomorrow' : `${daysLeft} day${daysLeft === 1 ? '' : 's'} left`}
+            {daysLeft === 0
+              ? tr('Resets tomorrow', lang)
+              : (lang === 'ar'
+                  ? `${daysLeft} يوم متبقي`
+                  : `${daysLeft} day${daysLeft === 1 ? '' : 's'} left`)}
           </div>
-          <div style={{ fontWeight: 700, fontSize: 15 }}>Weekly Volume</div>
+          <div style={{ fontWeight: 700, fontSize: 15 }}>{tr('Weekly Volume', lang)}</div>
         </div>
         <span className="mw-chip"><Icon name="flame" size={10}/> {totalSets}</span>
       </div>
@@ -432,7 +450,7 @@ function DesktopMuscleVolume({ history }) {
         })}
       </div>
       <div className="mw-mute" style={{ fontSize: 10, marginTop: 10, paddingTop: 8, borderTop: '1px solid var(--border)' }}>
-        Target sets per muscle · resets Friday
+        {tr('Target sets per muscle · resets Friday', lang)}
       </div>
     </div>
   );

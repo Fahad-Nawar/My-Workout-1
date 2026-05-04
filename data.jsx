@@ -131,6 +131,42 @@ const AR = {
   'Front of body':'مقدمة الجسم','Back of body':'خلفية الجسم',
   'Chest · Shoulders · Tri':'صدر · كتف · ترايسبس','Back · Biceps':'ظهر · بايسبس',
   'Push + Pull':'دفع + سحب','Legs · Glutes':'أرجل · مؤخرة',
+  // Sidebar / nav
+  'Dashboard':'الرئيسية','History':'السجل','Volume':'الحجم','Friends':'الأصدقاء',
+  'Edit splits':'تعديل البرامج','Profile':'الملف الشخصي',
+  'Quick start':'بداية سريعة',
+  // Mobile tabs
+  'HOME':'الرئيسية','LOG':'السجل','VOLUME':'الحجم','FRIENDS':'الأصدقاء',
+  // Stats
+  'Total Sessions':'إجمالي الجلسات','Current Streak':'السلسلة الحالية',
+  'Today':'اليوم','Active Splits':'البرامج النشطة',
+  // Dashboard
+  'Your splits':'برامجك','Recommended 6-day rotation':'دوران أسبوعي 6 أيام موصى به',
+  'Add split':'إضافة برنامج','View progress':'عرض التقدم','Save':'حفظ','Cancel':'إلغاء',
+  // Volume panel
+  'Weekly Volume':'الحجم الأسبوعي','Resets tomorrow':'يعاد غداً',
+  'Target sets per muscle · resets Friday':'الحد المستهدف لكل عضلة · يعاد كل جمعة',
+  'Weekly minimum sets per muscle. Resets every Friday.':'الحد الأدنى للمجاميع الأسبوعية لكل عضلة. يعاد كل جمعة.',
+  // Welcome
+  "Hey {name} — let's lift.":'أهلاً {name} — لنرفع الأثقال',
+  // Generic
+  'sessions':'جلسة','session':'جلسة','sets':'مجموعة','exercises':'تمرين',
+  'No splits yet — click Add split to get started.':'لا توجد برامج بعد — اضغط إضافة برنامج للبدء.',
+  // Edit splits screen
+  'Customize your routine':'خصص برنامجك','Custom':'مخصص',
+  'No exercises yet — add some below.':'لا توجد تمارين بعد — أضف بعضها أدناه.',
+  'Add from library':'إضافة من المكتبة',
+  // History / Progress screens
+  'Progress':'التقدم','No sessions yet — log your first workout!':'لا توجد جلسات بعد — سجّل أول تمرين لك!',
+  'Delete session':'حذف الجلسة',
+  // Misc
+  'Social':'اجتماعي','Add friend':'إضافة صديق','Bio':'نبذة','Loading...':'جارٍ التحميل...',
+  'Wants to be your friend':'يريد إضافتك كصديق','Decline':'رفض','Accept':'قبول',
+  'Recent sessions':'الجلسات الأخيرة','Splits':'البرامج','Copied':'تم النسخ','Copy':'نسخ',
+  'Sessions':'الجلسات','Sets / week':'مجموعات / أسبوع',
+  'No sessions logged yet':'لا توجد جلسات مسجلة بعد',
+  'No friends yet':'لا يوجد أصدقاء بعد','Find friends by their username':'ابحث عن الأصدقاء باسم المستخدم',
+  'Requests':'طلبات','Friends':'الأصدقاء','Sent':'مرسل',
 };
 
 const LangContext = React.createContext('en');

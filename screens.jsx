@@ -125,8 +125,8 @@ function Dashboard({ user, splits, history, onPickSplit, onEditSplits, onLogout,
           <AvatarView name={user.name} avatarUrl={user.avatarUrl} size={32} style={{ cursor: 'pointer' }}/>
         </button>
         <div style={{ flex: 1 }}>
-          <div className="mw-eyebrow">welcome,</div>
-          <div style={{ fontWeight: 700, fontSize: 17 }}>{user.name}</div>
+          <div className="mw-eyebrow">{lang === 'ar' ? 'مرحباً،' : 'welcome,'}</div>
+          <div style={{ fontWeight: 700, fontSize: 17 }} dir={lang === 'ar' ? 'ltr' : undefined}>{user.name}</div>
         </div>
         <button className="mw-btn mw-btn-icon" onClick={onToggleLang} aria-label="Toggle language"
           style={{ fontWeight: 700, fontSize: 13 }}>
@@ -144,33 +144,37 @@ function Dashboard({ user, splits, history, onPickSplit, onEditSplits, onLogout,
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 8, marginBottom: 18 }}>
         <div className="mw-stat">
           <div className="mw-stat-num mw-grad-text">{history.length}</div>
-          <div className="mw-stat-lbl">Sessions</div>
+          <div className="mw-stat-lbl">{tr('Sessions', lang)}</div>
         </div>
         <div className="mw-stat">
           <div className="mw-stat-num">{streakOf(history)}</div>
-          <div className="mw-stat-lbl">Streak</div>
+          <div className="mw-stat-lbl">{lang === 'ar' ? 'السلسلة' : 'Streak'}</div>
         </div>
         <div className="mw-stat">
           <div className="mw-stat-num">{todaySessions.length}</div>
-          <div className="mw-stat-lbl">Today</div>
+          <div className="mw-stat-lbl">{tr('Today', lang)}</div>
         </div>
       </div>
 
       <MuscleVolumeCard history={history}/>
 
       <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', marginBottom: 10 }}>
-        <h2 className="mw-h2">Your splits</h2>
+        <h2 className="mw-h2">{tr('Your splits', lang)}</h2>
         <div style={{ display: 'flex', gap: 6 }}>
           <button className="mw-btn mw-btn-sm mw-btn-ghost" onClick={() => setShowPicker(true)}>
-            <Icon name="plus" size={12}/> Add
+            <Icon name="plus" size={12}/> {lang === 'ar' ? 'إضافة' : 'Add'}
           </button>
           <button className="mw-btn mw-btn-sm mw-btn-ghost" onClick={onEditSplits}>
-            <Icon name="edit" size={12}/> Edit
+            <Icon name="edit" size={12}/> {lang === 'ar' ? 'تعديل' : 'Edit'}
           </button>
         </div>
       </div>
 
-      <div className="mw-eyebrow" style={{ marginBottom: 8 }}>{splitsList.length === 6 ? 'Recommended · 6-day rotation' : `${splitsList.length} split${splitsList.length===1?'':'s'} active`}</div>
+      <div className="mw-eyebrow" style={{ marginBottom: 8 }}>
+        {splitsList.length === 6
+          ? (lang === 'ar' ? 'موصى به · دوران 6 أيام' : 'Recommended · 6-day rotation')
+          : (lang === 'ar' ? `${splitsList.length} برنامج نشط` : `${splitsList.length} split${splitsList.length===1?'':'s'} active`)}
+      </div>
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, marginBottom: 16 }}>
         {splitsList.map((s) => (
           <SplitCard key={s.id} split={s} sessions={history.filter(h => h.day === s.id).length}
@@ -179,7 +183,9 @@ function Dashboard({ user, splits, history, onPickSplit, onEditSplits, onLogout,
         ))}
         {splitsList.length === 0 && (
           <div className="mw-mute" style={{ gridColumn: '1 / -1', textAlign: 'center', padding: 32, fontSize: 13, border: '1px dashed var(--border)', borderRadius: 12 }}>
-            No splits yet — tap <strong>Add</strong> to add one.
+            {lang === 'ar'
+              ? <>لا توجد برامج بعد — اضغط <strong>إضافة</strong> لإضافة واحد.</>
+              : <>No splits yet — tap <strong>Add</strong> to add one.</>}
           </div>
         )}
       </div>
@@ -267,24 +273,27 @@ function SplitCard({ split, sessions, todayDone, onClick }) {
       <div style={{ fontWeight: 700, fontSize: 15, marginBottom: 2 }}>{tr(split.name, lang)}</div>
       <div className="mw-mute" style={{ fontSize: 11, marginBottom: 10 }}>{tr(split.subtitle, lang) || `${split.exercises.length} exercises`}</div>
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-        <span className="mw-pill">{split.exercises.length} ex</span>
-        <span className="mw-mute" style={{ fontSize: 11, fontFamily: 'var(--mono)' }}>{sessions} logged</span>
+        <span className="mw-pill">{lang === 'ar' ? `${split.exercises.length} تمرين` : `${split.exercises.length} ex`}</span>
+        <span className="mw-mute" style={{ fontSize: 11, fontFamily: 'var(--mono)' }}>
+          {lang === 'ar' ? `${sessions} مسجلة` : `${sessions} logged`}
+        </span>
       </div>
     </div>
   );
 }
 
 function MuscleVolumeCard({ history }) {
+  const lang = React.useContext(LangContext);
   const counts = useMemo(() => weekSetsByMuscle(history), [history]);
   const totalSets = MUSCLES.reduce((a, m) => a + (counts[m.id] || 0), 0);
   return (
     <div className="mw-card" style={{ marginBottom: 16 }}>
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
         <div>
-          <div className="mw-eyebrow">This week</div>
-          <div style={{ fontWeight: 700, fontSize: 15 }}>Weekly Volume</div>
+          <div className="mw-eyebrow">{lang === 'ar' ? 'هذا الأسبوع' : 'This week'}</div>
+          <div style={{ fontWeight: 700, fontSize: 15 }}>{tr('Weekly Volume', lang)}</div>
         </div>
-        <span className="mw-chip"><Icon name="flame" size={10}/> {totalSets} sets</span>
+        <span className="mw-chip"><Icon name="flame" size={10}/> {lang === 'ar' ? `${totalSets} مجموعة` : `${totalSets} sets`}</span>
       </div>
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
         {MUSCLES.map(m => {
@@ -294,7 +303,7 @@ function MuscleVolumeCard({ history }) {
           return (
             <div key={m.id}>
               <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 3 }}>
-                <span style={{ fontSize: 11, fontWeight: 600, color: 'var(--text-dim)' }}>{m.label}</span>
+                <span style={{ fontSize: 11, fontWeight: 600, color: 'var(--text-dim)' }}>{tr(m.label, lang)}</span>
                 <span style={{ fontSize: 11, fontFamily: 'var(--mono)', color: done ? '#22c55e' : 'var(--text-mute)' }}>{count}/{m.target}</span>
               </div>
               <div style={{ height: 4, background: 'var(--border)', borderRadius: 2, overflow: 'hidden' }}>

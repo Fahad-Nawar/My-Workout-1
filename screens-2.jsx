@@ -26,11 +26,11 @@ function EditSplits({ splits, onSave, onBack }) {
       <div style={{ padding: '12px 16px', display: 'flex', alignItems: 'center', gap: 10, borderBottom: '1px solid var(--border)' }}>
         <button className="mw-btn mw-btn-icon" onClick={onBack}><Icon name="arrow-left" size={16}/></button>
         <div style={{ flex: 1 }}>
-          <div className="mw-eyebrow">Edit splits</div>
-          <div style={{ fontWeight: 700, fontSize: 16 }}>Customize your routine</div>
+          <div className="mw-eyebrow">{tr('Edit splits', lang)}</div>
+          <div style={{ fontWeight: 700, fontSize: 16 }}>{tr('Customize your routine', lang)}</div>
         </div>
         <button className="mw-btn mw-btn-primary mw-btn-sm" onClick={save}>
-          <Icon name="check" size={12} color="white"/> Save
+          <Icon name="check" size={12} color="white"/> {tr('Save', lang)}
         </button>
       </div>
 
@@ -44,20 +44,22 @@ function EditSplits({ splits, onSave, onBack }) {
               background: active === s.id ? 'var(--accent-soft)' : 'var(--surface)',
               color: active === s.id ? 'var(--accent)' : 'var(--text-dim)',
               borderColor: active === s.id ? 'var(--accent)' : 'var(--border)',
-            }}>{s.name}</button>
+            }}>{tr(s.name, lang)}</button>
         ))}
         <button className="mw-btn mw-btn-sm mw-btn-ghost" onClick={() => setShowCustom(true)} style={{ flex: 'none' }}>
-          <Icon name="plus" size={12}/> Custom
+          <Icon name="plus" size={12}/> {tr('Custom', lang)}
         </button>
       </div>
 
       {cur && (
         <div className="mw-scroll" style={{ flex: 1, padding: '16px' }}>
-          <div className="mw-eyebrow" style={{ marginBottom: 8 }}>In this split · {cur.exercises.length}</div>
+          <div className="mw-eyebrow" style={{ marginBottom: 8 }}>
+            {lang === 'ar' ? `في هذا البرنامج · ${cur.exercises.length}` : `In this split · ${cur.exercises.length}`}
+          </div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 6, marginBottom: 20 }}>
             {cur.exercises.length === 0 && (
               <div className="mw-mute" style={{ fontSize: 12, padding: 12, textAlign: 'center', border: '1px dashed var(--border)', borderRadius: 12 }}>
-                No exercises yet — add some below.
+                {tr('No exercises yet — add some below.', lang)}
               </div>
             )}
             {cur.exercises.map((ex, i) => (
@@ -72,7 +74,7 @@ function EditSplits({ splits, onSave, onBack }) {
             ))}
           </div>
 
-          <div className="mw-eyebrow" style={{ marginBottom: 8 }}>Add from library</div>
+          <div className="mw-eyebrow" style={{ marginBottom: 8 }}>{tr('Add from library', lang)}</div>
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
             {EXERCISE_POOL.filter(e => !cur.exercises.includes(e)).map(ex => (
               <button key={ex} className="mw-btn mw-btn-sm mw-btn-ghost" onClick={() => addExercise(ex)}>
@@ -149,15 +151,17 @@ function History({ history, splits, onBack, onDelete }) {
       <div style={{ padding: '12px 16px', display: 'flex', alignItems: 'center', gap: 10, borderBottom: '1px solid var(--border)' }}>
         <button className="mw-btn mw-btn-icon" onClick={onBack}><Icon name="arrow-left" size={16}/></button>
         <div style={{ flex: 1 }}>
-          <div className="mw-eyebrow">History</div>
-          <div style={{ fontWeight: 700, fontSize: 16 }}>{history.length} sessions</div>
+          <div className="mw-eyebrow">{tr('History', lang)}</div>
+          <div style={{ fontWeight: 700, fontSize: 16 }}>
+            {lang === 'ar' ? `${history.length} جلسة` : `${history.length} sessions`}
+          </div>
         </div>
       </div>
       <div className="mw-scroll" style={{ flex: 1, padding: '16px' }}>
         {history.length === 0 && (
           <div className="mw-mute" style={{ textAlign: 'center', padding: 40, fontSize: 13 }}>
             <Icon name="history" size={32} color="var(--text-mute)"/>
-            <div style={{ marginTop: 8 }}>No sessions yet — log your first workout!</div>
+            <div style={{ marginTop: 8 }}>{tr('No sessions yet — log your first workout!', lang)}</div>
           </div>
         )}
         {history.map(sess => {
@@ -169,10 +173,10 @@ function History({ history, splits, onBack, onDelete }) {
               <button onClick={() => setOpenId(open ? null : sess.id)} style={{ width: '100%', padding: '12px 14px', display: 'flex', alignItems: 'center', gap: 10, textAlign: 'left' }}>
                 <div style={{ width: 36, height: 36, borderRadius: 10, background: (split?.color || '#6366f1') + '22', color: split?.color || 'var(--accent)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700, fontFamily: 'var(--mono)', fontSize: 13 }}>{split?.icon || '?'}</div>
                 <div style={{ flex: 1 }}>
-                  <div style={{ fontWeight: 600, fontSize: 13 }}>{split?.name || sess.day}</div>
+                  <div style={{ fontWeight: 600, fontSize: 13 }}>{tr(split?.name || sess.day, lang)}</div>
                   <div className="mw-mute" style={{ fontSize: 11 }}>{sess.date}</div>
                 </div>
-                <span className="mw-pill">{totalSets} sets</span>
+                <span className="mw-pill">{lang === 'ar' ? `${totalSets} مجموعة` : `${totalSets} sets`}</span>
                 <Icon name="chevron-down" size={14} color="var(--text-mute)" style={{ transform: open ? 'rotate(180deg)' : 'none', transition: 'transform .2s' }}/>
               </button>
               {open && (
@@ -189,7 +193,7 @@ function History({ history, splits, onBack, onDelete }) {
                   ))}
                   <button className="mw-btn mw-btn-sm mw-btn-ghost" onClick={() => onDelete(sess.id)}
                     style={{ marginTop: 10, color: 'var(--danger)', borderColor: 'var(--danger)' }}>
-                    <Icon name="trash" size={11} color="var(--danger)"/> Delete session
+                    <Icon name="trash" size={11} color="var(--danger)"/> {tr('Delete session', lang)}
                   </button>
                 </div>
               )}
@@ -214,9 +218,11 @@ function MuscleVolumePanel({ history }) {
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14 }}>
         <div>
           <div className="mw-eyebrow">
-            Fri – Thu · {daysLeft === 0 ? 'Resets tomorrow' : `${daysLeft} day${daysLeft === 1 ? '' : 's'} left`}
+            {lang === 'ar'
+              ? `الجمعة – الخميس · ${daysLeft === 0 ? 'يعاد غداً' : `${daysLeft} يوم متبقي`}`
+              : `Fri – Thu · ${daysLeft === 0 ? 'Resets tomorrow' : `${daysLeft} day${daysLeft === 1 ? '' : 's'} left`}`}
           </div>
-          <div style={{ fontWeight: 700, fontSize: 17 }}>Weekly Volume</div>
+          <div style={{ fontWeight: 700, fontSize: 17 }}>{tr('Weekly Volume', lang)}</div>
         </div>
         <Icon name="flame" size={18} color="var(--accent)"/>
       </div>
@@ -246,7 +252,7 @@ function MuscleVolumePanel({ history }) {
         })}
       </div>
       <div className="mw-mute" style={{ fontSize: 11, marginTop: 12, paddingTop: 10, borderTop: '1px solid var(--border)' }}>
-        Weekly minimum sets per muscle. Resets every Friday.
+        {tr('Weekly minimum sets per muscle. Resets every Friday.', lang)}
       </div>
     </div>
   );
@@ -254,13 +260,14 @@ function MuscleVolumePanel({ history }) {
 
 // ────────────────────────── Progress ──────────────────────────
 function Progress({ history, splits, onBack }) {
+  const lang = React.useContext(LangContext);
   return (
     <div className="mw-fade-in" style={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
       <div style={{ padding: '12px 16px', display: 'flex', alignItems: 'center', gap: 10, borderBottom: '1px solid var(--border)' }}>
         <button className="mw-btn mw-btn-icon" onClick={onBack}><Icon name="arrow-left" size={16}/></button>
         <div style={{ flex: 1 }}>
-          <div className="mw-eyebrow">Progress</div>
-          <div style={{ fontWeight: 700, fontSize: 16 }}>Weekly Volume</div>
+          <div className="mw-eyebrow">{tr('Progress', lang)}</div>
+          <div style={{ fontWeight: 700, fontSize: 16 }}>{tr('Weekly Volume', lang)}</div>
         </div>
       </div>
 
