@@ -1,5 +1,31 @@
 /* MyWorkout — design tokens + base styles */
 
+/* Thmanyah Sans — applied automatically to Arabic characters */
+@font-face {
+  font-family: 'Thmanyah';
+  src: url('fonts/thmanyahsans-Regular.woff2') format('woff2');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+  unicode-range: U+0600-U+06FF, U+0750-U+077F, U+FB50-U+FDFF, U+FE70-U+FEFF;
+}
+@font-face {
+  font-family: 'Thmanyah';
+  src: url('fonts/thmanyahsans-Medium.woff2') format('woff2');
+  font-weight: 500 600;
+  font-style: normal;
+  font-display: swap;
+  unicode-range: U+0600-U+06FF, U+0750-U+077F, U+FB50-U+FDFF, U+FE70-U+FEFF;
+}
+@font-face {
+  font-family: 'Thmanyah';
+  src: url('fonts/thmanyahsans-Bold.woff2') format('woff2');
+  font-weight: 700 900;
+  font-style: normal;
+  font-display: swap;
+  unicode-range: U+0600-U+06FF, U+0750-U+077F, U+FB50-U+FDFF, U+FE70-U+FEFF;
+}
+
 :root {
   /* Midnight (default) */
   --bg: #0a0a0c;
@@ -21,7 +47,7 @@
   --radius-sm: 10px;
   --radius-lg: 22px;
   --shadow: 0 4px 18px rgba(0,0,0,.35);
-  --font: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
+  --font: 'Thmanyah', 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
   --mono: 'JetBrains Mono', ui-monospace, "SF Mono", Menlo, monospace;
 }
 
