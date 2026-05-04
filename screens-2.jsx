@@ -249,107 +249,25 @@ function MuscleVolumePanel({ history }) {
   );
 }
 
-// ────────────────────────── Progress (chart) ──────────────────────────
+// ────────────────────────── Progress ──────────────────────────
 function Progress({ history, splits, onBack }) {
-  const allExercises = useMemo2(() => {
-    const set = new Set();
-    history.forEach(h => h.exercises?.forEach(e => set.add(e.name)));
-    return [...set];
-  }, [history]);
-
-  const [picked, setPicked] = useState2(allExercises[0] || '');
-  useEffect2(() => { if (!picked && allExercises[0]) setPicked(allExercises[0]); }, [allExercises]);
-
-  const dataPoints = useMemo2(() => {
-    return history
-      .filter(h => h.exercises?.some(e => e.name === picked))
-      .map(h => {
-        const ex = h.exercises.find(e => e.name === picked);
-        const maxW = Math.max(...ex.sets.map(s => parseFloat(s.weight) || 0), 0);
-        const totalReps = ex.sets.reduce((a, s) => a + (parseInt(s.reps) || 0), 0);
-        return { date: h.date, maxW, totalReps };
-      })
-      .reverse();
-  }, [history, picked]);
-
   return (
     <div className="mw-fade-in" style={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
       <div style={{ padding: '12px 16px', display: 'flex', alignItems: 'center', gap: 10, borderBottom: '1px solid var(--border)' }}>
         <button className="mw-btn mw-btn-icon" onClick={onBack}><Icon name="arrow-left" size={16}/></button>
         <div style={{ flex: 1 }}>
           <div className="mw-eyebrow">Progress</div>
-          <div style={{ fontWeight: 700, fontSize: 16 }}>Track your gains</div>
+          <div style={{ fontWeight: 700, fontSize: 16 }}>Weekly Volume</div>
         </div>
       </div>
 
       <div className="mw-scroll" style={{ flex: 1, padding: '16px' }}>
         <MuscleVolumePanel history={history}/>
-        {allExercises.length === 0 ? (
-          <div className="mw-mute" style={{ textAlign: 'center', padding: 40, fontSize: 13 }}>
-            <Icon name="chart" size={32} color="var(--text-mute)"/>
-            <div style={{ marginTop: 8 }}>Log a session to see your exercise progress.</div>
-          </div>
-        ) : (
-          <>
-            <div className="mw-eyebrow" style={{ marginBottom: 8 }}>Exercise</div>
-            <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 16 }}>
-              {allExercises.map(ex => (
-                <button key={ex} className="mw-btn mw-btn-sm"
-                  onClick={() => setPicked(ex)}
-                  style={{
-                    background: picked === ex ? 'var(--accent-soft)' : 'var(--surface-2)',
-                    color: picked === ex ? 'var(--accent)' : 'var(--text-dim)',
-                    border: picked === ex ? '1px solid var(--accent)' : '1px solid var(--border)',
-                  }}>{ex}</button>
-              ))}
-            </div>
-
-            <Chart data={dataPoints}/>
-
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, marginTop: 16 }}>
-              <div className="mw-stat">
-                <div className="mw-stat-num" style={{ color: 'var(--accent)' }}>{Math.max(...dataPoints.map(d => d.maxW), 0)}<span style={{ fontSize: 14, color: 'var(--text-mute)' }}> kg</span></div>
-                <div className="mw-stat-lbl">Personal Best</div>
-              </div>
-              <div className="mw-stat">
-                <div className="mw-stat-num" style={{ color: 'var(--accent-2)' }}>{dataPoints.reduce((a,d) => a + d.totalReps, 0)}</div>
-                <div className="mw-stat-lbl">Total Reps</div>
-              </div>
-            </div>
-          </>
-        )}
       </div>
     </div>
   );
 }
 
-function Chart({ data }) {
-  if (!data.length) return <div className="mw-card mw-mute" style={{ height: 200, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 12 }}>No data for this exercise yet.</div>;
-  const W = 320, H = 180, P = 28;
-  const maxW = Math.max(...data.map(d => d.maxW), 1);
-  const maxR = Math.max(...data.map(d => d.totalReps), 1);
-  const xStep = data.length > 1 ? (W - 2 * P) / (data.length - 1) : 0;
-  const wPath = data.map((d, i) => `${i === 0 ? 'M' : 'L'} ${P + i * xStep} ${H - P - (d.maxW / maxW) * (H - 2 * P)}`).join(' ');
-  const rPath = data.map((d, i) => `${i === 0 ? 'M' : 'L'} ${P + i * xStep} ${H - P - (d.totalReps / maxR) * (H - 2 * P)}`).join(' ');
-  return (
-    <div className="mw-card" style={{ padding: 14 }}>
-      <div style={{ display: 'flex', gap: 14, marginBottom: 8, fontSize: 11 }}>
-        <span style={{ display: 'flex', alignItems: 'center', gap: 4 }}><span style={{ width: 8, height: 8, borderRadius: 2, background: 'var(--accent)' }}/> Max kg</span>
-        <span style={{ display: 'flex', alignItems: 'center', gap: 4 }}><span style={{ width: 8, height: 2, background: 'var(--accent-2)' }}/> Total reps</span>
-      </div>
-      <svg viewBox={`0 0 ${W} ${H}`} style={{ width: '100%', height: 'auto' }}>
-        {[0, 0.25, 0.5, 0.75, 1].map(t => (
-          <line key={t} x1={P} x2={W - P} y1={P + t * (H - 2 * P)} y2={P + t * (H - 2 * P)} stroke="var(--border)" strokeWidth="1"/>
-        ))}
-        <path d={wPath} fill="none" stroke="var(--accent)" strokeWidth="2"/>
-        <path d={rPath} fill="none" stroke="var(--accent-2)" strokeWidth="1.5" strokeDasharray="4 3"/>
-        {data.map((d, i) => (
-          <circle key={i} cx={P + i * xStep} cy={H - P - (d.maxW / maxW) * (H - 2 * P)} r="3" fill="var(--accent)"/>
-        ))}
-      </svg>
-    </div>
-  );
-}
 
 window.EditSplits = EditSplits;
 window.History = History;
