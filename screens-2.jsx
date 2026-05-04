@@ -272,3 +272,4 @@ function Progress({ history, splits, onBack }) {
 window.EditSplits = EditSplits;
 window.History = History;
 window.Progress = Progress;
+window.MuscleVolumePanel = MuscleVolumePanel;

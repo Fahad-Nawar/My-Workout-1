@@ -118,6 +118,65 @@ function weekSetsByMuscle(history) {
   return counts;
 }
 
+// ────────────────────────── utils (shared across screens) ──────────────────────────
+function colorFromName(name) {
+  const palette = ['#6366f1','#a855f7','#06b6d4','#10b981','#f59e0b','#ef4444','#ec4899','#8b5cf6'];
+  let h = 0; for (let i = 0; i < (name||'').length; i++) h = (h * 31 + name.charCodeAt(i)) | 0;
+  return palette[Math.abs(h) % palette.length];
+}
+function initialsOf(name) {
+  const parts = (name || '').trim().split(/\s+/).filter(Boolean);
+  if (!parts.length) return '?';
+  if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase();
+  return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
+}
+
+// ────────────────────────── social ──────────────────────────
+async function searchUsers(query) {
+  const { data } = await sb.from('user_data')
+    .select('user_id, name')
+    .ilike('name', `%${query}%`)
+    .limit(10);
+  const { data: { user } } = await sb.auth.getUser();
+  return (data || []).filter(u => u.user_id !== user?.id);
+}
+
+async function fetchFriendships(userId) {
+  const { data, error } = await sb.from('friendships')
+    .select('*')
+    .or(`requester_id.eq.${userId},addressee_id.eq.${userId}`);
+  if (error) return [];
+  return data || [];
+}
+
+async function sendFriendRequest(addresseeId) {
+  const { data: { user } } = await sb.auth.getUser();
+  const { error } = await sb.from('friendships').insert({
+    requester_id: user.id, addressee_id: addresseeId,
+  });
+  if (error) throw error;
+}
+
+async function respondToRequest(friendshipId, accept) {
+  if (accept) {
+    await sb.from('friendships').update({ status: 'accepted' }).eq('id', friendshipId);
+  } else {
+    await sb.from('friendships').delete().eq('id', friendshipId);
+  }
+}
+
+async function removeFriend(friendshipId) {
+  await sb.from('friendships').delete().eq('id', friendshipId);
+}
+
+async function fetchFriendData(friendId) {
+  const { data } = await sb.from('user_data')
+    .select('name, history, splits')
+    .eq('user_id', friendId)
+    .single();
+  return data;
+}
+
 // ────────────────────────── auth ──────────────────────────
 function usernameToEmail(username) {
   return username.toLowerCase().replace(/[^a-z0-9]/g, '_') + '@myworkout.app';
@@ -197,8 +256,11 @@ function seedDemoSession(userId, splitId, exercises, daysAgo) {
 Object.assign(window, {
   DEFAULT_SPLITS, SPLIT_ORDER, EXERCISE_POOL, MUSCLE_MAP, MUSCLES,
   sb,
+  colorFromName, initialsOf,
   authSignUp, authSignIn, authSignOut,
   fetchUserData, pushUserSplits, pushUserHistory,
   todayStr, makeId, defaultUserSplits, seedDemoSession,
   parseDateStr, weekSetsByMuscle,
+  searchUsers, fetchFriendships, sendFriendRequest,
+  respondToRequest, removeFriend, fetchFriendData,
 });

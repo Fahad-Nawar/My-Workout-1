@@ -135,9 +135,11 @@ function MobileApp({ theme, density, accentHue, onToggleTheme }) {
     body = <History history={app.history} splits={app.splits} onBack={() => setRoute({ name: 'dashboard' })} onDelete={app.deleteSession}/>;
   } else if (route.name === 'progress') {
     body = <Progress history={app.history} splits={app.splits} onBack={() => setRoute({ name: 'dashboard' })}/>;
+  } else if (route.name === 'social') {
+    body = <SocialScreen currentUser={app.activeUser}/>;
   }
 
-  const showTabs = ['dashboard', 'history', 'progress'].includes(route.name);
+  const showTabs = ['dashboard', 'history', 'progress', 'social'].includes(route.name);
 
   return (
     <div className="mw-root" data-theme={theme} data-density={density} style={{ height: '100%', display: 'flex', flexDirection: 'column', position: 'relative', ...themeStyle }}>
@@ -148,10 +150,13 @@ function MobileApp({ theme, density, accentHue, onToggleTheme }) {
             <Icon name="home" size={18}/>HOME
           </button>
           <button className={`mw-tab ${route.name === 'history' ? 'active' : ''}`} onClick={() => setRoute({ name: 'history' })}>
-            <Icon name="history" size={18}/>HISTORY
+            <Icon name="history" size={18}/>LOG
           </button>
           <button className={`mw-tab ${route.name === 'progress' ? 'active' : ''}`} onClick={() => setRoute({ name: 'progress' })}>
-            <Icon name="chart" size={18}/>PROGRESS
+            <Icon name="chart" size={18}/>VOLUME
+          </button>
+          <button className={`mw-tab ${route.name === 'social' ? 'active' : ''}`} onClick={() => setRoute({ name: 'social' })}>
+            <Icon name="people" size={18}/>FRIENDS
           </button>
         </div>
       )}
@@ -186,7 +191,8 @@ function DesktopApp({ theme, density, onToggleTheme }) {
   const navItems = [
     { id: 'dashboard', label: 'Dashboard', icon: 'home' },
     { id: 'history', label: 'History', icon: 'history' },
-    { id: 'progress', label: 'Progress', icon: 'chart' },
+    { id: 'progress', label: 'Volume', icon: 'chart' },
+    { id: 'social', label: 'Friends', icon: 'people' },
     { id: 'edit', label: 'Edit splits', icon: 'edit' },
   ];
 
@@ -260,6 +266,9 @@ function DesktopApp({ theme, density, onToggleTheme }) {
           )}
           {route.name === 'progress' && (
             <Progress history={app.history} splits={app.splits} onBack={() => setRoute({ name: 'dashboard' })}/>
+          )}
+          {route.name === 'social' && (
+            <SocialScreen currentUser={app.activeUser}/>
           )}
         </main>
       </div>
