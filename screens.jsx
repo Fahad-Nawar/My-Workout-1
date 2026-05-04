@@ -336,9 +336,10 @@ function Logger({ split, history, onBack, onSave, onEditSplit }) {
   const [showTimer, setShowTimer] = useState(false);
 
   const updateSet = (ex, i, field, value) => {
+    const normalized = (field === 'weight' || field === 'reps') ? toEnglishNumerals(value) : value;
     setState(s => ({
       ...s,
-      [ex]: s[ex].map((set, idx) => idx === i ? { ...set, [field]: value } : set),
+      [ex]: s[ex].map((set, idx) => idx === i ? { ...set, [field]: normalized } : set),
     }));
   };
   const addSet = (ex) => setState(s => {

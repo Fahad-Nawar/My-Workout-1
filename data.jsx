@@ -77,6 +77,12 @@ const MUSCLES = [
   { id: 'abs',      label: 'Abs',      target: 8,  color: '#8b5cf6' },
 ];
 
+function toEnglishNumerals(str) {
+  return String(str)
+    .replace(/[٠١٢٣٤٥٦٧٨٩]/g, d => d.charCodeAt(0) - 0x0660)
+    .replace(/[۰۱۲۳۴۵۶۷۸۹]/g, d => d.charCodeAt(0) - 0x06F0);
+}
+
 function parseDateStr(str) {
   const months = { Jan:0,Feb:1,Mar:2,Apr:3,May:4,Jun:5,Jul:6,Aug:7,Sep:8,Oct:9,Nov:10,Dec:11 };
   const parts = str.replace(/,/g, '').split(/\s+/);
@@ -278,6 +284,7 @@ function seedDemoSession(userId, splitId, exercises, daysAgo) {
 
 Object.assign(window, {
   DEFAULT_SPLITS, SPLIT_ORDER, EXERCISE_POOL, MUSCLE_MAP, MUSCLES,
+  toEnglishNumerals,
   sb,
   colorFromName, initialsOf,
   authSignUp, authSignIn, authSignOut,
