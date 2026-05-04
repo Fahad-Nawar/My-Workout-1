@@ -5,7 +5,8 @@
       "WebFetch(domain:raw.githubusercontent.com)",
       "Bash(git pull *)",
       "Bash(git push *)",
-      "Bash(git stash *)"
+      "Bash(git stash *)",
+      "mcp__claude_ai_Supabase__execute_sql"
     ]
   },
   "enableAllProjectMcpServers": true,
