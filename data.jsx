@@ -14,7 +14,7 @@ const DEFAULT_SPLITS = {
   posterior: {
     id: 'posterior', name: 'Posterior', subtitle: 'Back of body', icon: 'P',
     recommended: true, color: '#a855f7',
-    exercises: ['Lat Pulldown','Lat Row Single','Shrugs','Rear Shoulder','Calf','Hammer Curl','Hip Thrust','Preacher Curl','Wrist'],
+    exercises: ['Lat Pulldown','Lat Row Single','Shrugs','Rear Shoulder','Calf','Hammer Curl','Hip Thrust','Preacher Curl','Wrist','T-Bar Row','Leg Curl'],
   },
   push: {
     id: 'push', name: 'Push', subtitle: 'Chest · Shoulders · Tri', icon: '↑', color: '#06b6d4',
