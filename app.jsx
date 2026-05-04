@@ -20,6 +20,8 @@ function useAppState() {
   const [name, setName] = useS('');
   const [splits, setSplits] = useS({});
   const [history, setHistory] = useS([]);
+  const [bio, setBio] = useS('');
+  const [avatarUrl, setAvatarUrl] = useS('');
 
   useE(() => {
     sb.auth.getSession().then(({ data: { session } }) => {
@@ -40,6 +42,8 @@ function useAppState() {
       setName(d.name);
       setSplits(d.splits || defaultUserSplits());
       setHistory(d.history || []);
+      setBio(d.bio || '');
+      setAvatarUrl(d.avatarUrl || '');
       setLoading(false);
     });
   }, [authUser?.id]);
@@ -76,16 +80,22 @@ function useAppState() {
     updateSplits({ ...splits, [id]: { ...splits[id], added } });
   };
 
+  const updateProfile = async ({ bio: newBio, avatarUrl: newAvatarUrl }) => {
+    setBio(newBio);
+    setAvatarUrl(newAvatarUrl);
+    if (authUser) await pushUserProfile(authUser.id, { bio: newBio, avatarUrl: newAvatarUrl });
+  };
+
   const activeUser = (authUser && name) ? {
     id: authUser.id, name,
     initials: initialsOf(name), color: colorFromName(name),
-    sessionCount: history.length,
+    sessionCount: history.length, bio, avatarUrl,
   } : null;
 
   return {
     loading, activeUser, splits, history,
     login: authSignIn, signup: authSignUp, logout: authSignOut,
-    updateSplits, saveSession, deleteSession, toggleSplit,
+    updateSplits, saveSession, deleteSession, toggleSplit, updateProfile,
   };
 }
 
@@ -137,6 +147,10 @@ function MobileApp({ theme, density, accentHue, onToggleTheme }) {
     body = <Progress history={app.history} splits={app.splits} onBack={() => setRoute({ name: 'dashboard' })}/>;
   } else if (route.name === 'social') {
     body = <SocialScreen currentUser={app.activeUser}/>;
+  } else if (route.name === 'profile') {
+    body = <ProfileScreen user={app.activeUser}
+      onSave={app.updateProfile}
+      onBack={() => setRoute({ name: 'dashboard' })}/>;
   }
 
   const showTabs = ['dashboard', 'history', 'progress', 'social'].includes(route.name);
@@ -194,6 +208,7 @@ function DesktopApp({ theme, density, onToggleTheme }) {
     { id: 'progress', label: 'Volume', icon: 'chart' },
     { id: 'social', label: 'Friends', icon: 'people' },
     { id: 'edit', label: 'Edit splits', icon: 'edit' },
+    { id: 'profile', label: 'Profile', icon: 'user' },
   ];
 
   const splitsList = SPLIT_ORDER.map(id => app.splits[id]).filter(Boolean);
@@ -214,7 +229,7 @@ function DesktopApp({ theme, density, onToggleTheme }) {
           </div>
 
           <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '6px 8px', marginBottom: 14, background: 'var(--surface-2)', borderRadius: 10 }}>
-            <div className="mw-avatar-sm" style={{ width: 28, height: 28, fontSize: 11, background: app.activeUser.color }}>{app.activeUser.initials}</div>
+            <AvatarView name={app.activeUser.name} avatarUrl={app.activeUser.avatarUrl} size={28}/>
             <div style={{ flex: 1, minWidth: 0 }}>
               <div style={{ fontSize: 12, fontWeight: 600, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{app.activeUser.name}</div>
               <div className="mw-mute" style={{ fontSize: 10 }}>{app.history.length} sessions</div>
@@ -269,6 +284,11 @@ function DesktopApp({ theme, density, onToggleTheme }) {
           )}
           {route.name === 'social' && (
             <SocialScreen currentUser={app.activeUser}/>
+          )}
+          {route.name === 'profile' && (
+            <ProfileScreen user={app.activeUser}
+              onSave={app.updateProfile}
+              onBack={() => setRoute({ name: 'dashboard' })}/>
           )}
         </main>
       </div>
