@@ -80,10 +80,19 @@ function useAppState() {
     updateSplits({ ...splits, [id]: { ...splits[id], added } });
   };
 
-  const updateProfile = async ({ bio: newBio, avatarUrl: newAvatarUrl }) => {
-    setBio(newBio);
-    setAvatarUrl(newAvatarUrl);
-    if (authUser) await pushUserProfile(authUser.id, { bio: newBio, avatarUrl: newAvatarUrl });
+  const updateProfile = async ({ bio: newBio, avatarUrl: newAvatarUrl, name: newName }) => {
+    if (newBio !== undefined) setBio(newBio);
+    if (newAvatarUrl !== undefined) setAvatarUrl(newAvatarUrl);
+    if (newName !== undefined) setName(newName);
+    if (authUser) {
+      if (newName !== undefined) await pushUserName(authUser.id, newName);
+      if (newBio !== undefined || newAvatarUrl !== undefined) {
+        await pushUserProfile(authUser.id, {
+          bio: newBio !== undefined ? newBio : bio,
+          avatarUrl: newAvatarUrl !== undefined ? newAvatarUrl : avatarUrl,
+        });
+      }
+    }
   };
 
   const activeUser = (authUser && name) ? {

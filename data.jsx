@@ -351,6 +351,16 @@ async function pushUserProfile(userId, { bio, avatarUrl }) {
   await sb.from('user_data').update(updates).eq('user_id', userId);
 }
 
+async function pushUserName(userId, name) {
+  const { error } = await sb.from('user_data').update({ name }).eq('user_id', userId);
+  if (error) throw error;
+}
+
+async function checkUsernameAvailable(name) {
+  const { data } = await sb.from('user_data').select('user_id').eq('name', name).limit(1);
+  return !data || data.length === 0;
+}
+
 async function uploadAvatar(userId, file) {
   const ext = (file.name.split('.').pop() || 'jpg').toLowerCase();
   const path = `${userId}/avatar.${ext}`;
@@ -391,7 +401,7 @@ Object.assign(window, {
   sb,
   colorFromName, initialsOf,
   authSignUp, authSignIn, authSignOut,
-  fetchUserData, pushUserSplits, pushUserHistory, pushUserProfile, uploadAvatar,
+  fetchUserData, pushUserSplits, pushUserHistory, pushUserProfile, pushUserName, checkUsernameAvailable, uploadAvatar,
   todayStr, makeId, defaultUserSplits, seedDemoSession,
   parseDateStr, weekSetsByMuscle,
   searchUsers, fetchFriendships, sendFriendRequest,

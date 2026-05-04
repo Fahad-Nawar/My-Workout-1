@@ -545,6 +545,9 @@ function ProfileScreen({ user, onSave, onBack }) {
   const [saving, setSaving] = useState(false);
   const [msg, setMsg] = useState('');
   const [editingBio, setEditingBio] = useState(false);
+  const [editingName, setEditingName] = useState(false);
+  const [draftName, setDraftName] = useState(user.name || '');
+  const [savingName, setSavingName] = useState(false);
   const fileRef = useRef();
 
   const handleAvatarChange = async (e) => {
@@ -580,6 +583,26 @@ function ProfileScreen({ user, onSave, onBack }) {
     }
   };
 
+  const handleSaveName = async () => {
+    const trimmed = draftName.trim();
+    if (!trimmed || trimmed === user.name) { setEditingName(false); return; }
+    if (trimmed.length < 2) { setMsg('Username must be at least 2 characters'); setTimeout(() => setMsg(''), 2500); return; }
+    setSavingName(true);
+    setMsg('');
+    try {
+      const available = await checkUsernameAvailable(trimmed);
+      if (!available) { setMsg('Username already taken'); setTimeout(() => setMsg(''), 2500); return; }
+      await onSave({ name: trimmed });
+      setMsg('Username updated');
+      setEditingName(false);
+    } catch {
+      setMsg('Error saving');
+    } finally {
+      setSavingName(false);
+      setTimeout(() => setMsg(''), 2500);
+    }
+  };
+
   return (
     <div className="mw-fade-in" style={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
       <div style={{ padding: '12px 16px', display: 'flex', alignItems: 'center', gap: 10, borderBottom: '1px solid var(--border)' }}>
@@ -611,10 +634,31 @@ function ProfileScreen({ user, onSave, onBack }) {
           </div>
           <input type="file" accept="image/*" ref={fileRef}
             onChange={handleAvatarChange} style={{ display: 'none' }}/>
-          <div style={{ marginTop: 14, display: 'flex', alignItems: 'center' }}>
-            <div style={{ fontWeight: 700, fontSize: 22 }}>{user.name}</div>
-            <FounderBadge/>
-          </div>
+          {editingName ? (
+            <div style={{ marginTop: 14, display: 'flex', alignItems: 'center', gap: 8 }}>
+              <input
+                className="mw-input"
+                value={draftName}
+                onChange={e => setDraftName(e.target.value)}
+                onKeyDown={e => { if (e.key === 'Enter') handleSaveName(); if (e.key === 'Escape') { setDraftName(user.name); setEditingName(false); } }}
+                autoFocus
+                maxLength={30}
+                style={{ fontSize: 18, fontWeight: 700, textAlign: 'center', width: 180 }}
+              />
+              <button className="mw-btn mw-btn-primary mw-btn-sm" onClick={handleSaveName} disabled={savingName}>
+                {savingName ? <div className="mw-spinner" style={{ width: 12, height: 12, borderColor: 'rgba(255,255,255,.3)', borderTopColor: '#fff' }}/> : 'Save'}
+              </button>
+              <button className="mw-btn mw-btn-sm" onClick={() => { setDraftName(user.name); setEditingName(false); }}>✕</button>
+            </div>
+          ) : (
+            <div style={{ marginTop: 14, display: 'flex', alignItems: 'center', gap: 6 }}>
+              <div style={{ fontWeight: 700, fontSize: 22 }}>{user.name}</div>
+              <FounderBadge/>
+              <button className="mw-btn mw-btn-icon" onClick={() => { setDraftName(user.name); setEditingName(true); }} style={{ width: 24, height: 24, marginLeft: 2 }} title="Change username">
+                <Icon name="edit" size={11} color="var(--text-mute)"/>
+              </button>
+            </div>
+          )}
           <div className="mw-mute" style={{ fontSize: 12, marginTop: 3 }}>
             {user.sessionCount} sessions
           </div>
