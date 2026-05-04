@@ -7,30 +7,30 @@ const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
 const DEFAULT_SPLITS = {
   anterior: {
-    id: 'anterior', name: 'الجزء الأمامي', subtitle: 'مقدمة الجسم', icon: 'أ',
+    id: 'anterior', name: 'Anterior', subtitle: 'Front of body', icon: 'A',
     recommended: true, color: '#6366f1',
-    exercises: ['كتف امامي','تجميع صدر','صدر علوي','رفرفة جانبية','ترايسبس','بطن','دفع أرجل','تمديد الأرجل','عضلة داخل الفخذ'],
+    exercises: ['Shoulder Press','Chest Fly','Incline Chest Press','Lateral Raises','Triceps','Abs','Leg Press','Leg Extension','Adductors'],
   },
   posterior: {
-    id: 'posterior', name: 'الجزء الخلفي', subtitle: 'خلفية الجسم', icon: 'خ',
+    id: 'posterior', name: 'Posterior', subtitle: 'Back of body', icon: 'P',
     recommended: true, color: '#a855f7',
-    exercises: ['سحب علوي','سحب لاتس يد واحدة','ترابيس','كتف خلفي','بطات','هامر كيرل','رفع الحوض','كيرل على المقعد','ساعد'],
+    exercises: ['Lat Pulldown','Lat Row Single','Shrugs','Rear Shoulder','Calf','Hammer Curl','Hip Thrust','Preacher Curl','Wrist'],
   },
   push: {
-    id: 'push', name: 'دفع', subtitle: 'صدر · كتف · ترايسبس', icon: '↑', color: '#06b6d4',
-    exercises: ['كتف امامي','تجميع صدر','صدر علوي','رفرفة جانبية','ترايسبس','بطن'],
+    id: 'push', name: 'Push', subtitle: 'Chest · Shoulders · Tri', icon: '↑', color: '#06b6d4',
+    exercises: ['Shoulder Press','Chest Fly','Incline Chest Press','Lateral Raises','Triceps','Abs'],
   },
   pull: {
-    id: 'pull', name: 'سحب', subtitle: 'ظهر · بايسبس', icon: '↓', color: '#10b981',
-    exercises: ['سحب علوي','سحب لاتس يد واحدة','ترابيس','كتف خلفي','هامر كيرل','كيرل على المقعد','ساعد'],
+    id: 'pull', name: 'Pull', subtitle: 'Back · Biceps', icon: '↓', color: '#10b981',
+    exercises: ['Lat Pulldown','Lat Row Single','Shrugs','Rear Shoulder','Hammer Curl','Preacher Curl','Wrist'],
   },
   upper: {
-    id: 'upper', name: 'الجزء العلوي', subtitle: 'دفع + سحب', icon: '⤴', color: '#f59e0b',
-    exercises: ['كتف امامي','تجميع صدر','صدر علوي','رفرفة جانبية','ترايسبس','سحب علوي','سحب لاتس يد واحدة','ترابيس','كتف خلفي','هامر كيرل','كيرل على المقعد','ساعد'],
+    id: 'upper', name: 'Upper', subtitle: 'Push + Pull', icon: '⤴', color: '#f59e0b',
+    exercises: ['Shoulder Press','Chest Fly','Incline Chest Press','Lateral Raises','Triceps','Lat Pulldown','Lat Row Single','Shrugs','Rear Shoulder','Hammer Curl','Preacher Curl','Wrist'],
   },
   lower: {
-    id: 'lower', name: 'الجزء السفلي', subtitle: 'أرجل · مؤخرة', icon: '⤵', color: '#ef4444',
-    exercises: ['دفع أرجل','تمديد الأرجل','عضلة داخل الفخذ','رفع الحوض','بطات'],
+    id: 'lower', name: 'Lower', subtitle: 'Legs · Glutes', icon: '⤵', color: '#ef4444',
+    exercises: ['Leg Press','Leg Extension','Adductors','Hip Thrust','Calf'],
   },
 };
 
@@ -169,10 +169,14 @@ const AR = {
   'Requests':'طلبات','Friends':'الأصدقاء','Sent':'مرسل',
 };
 
+const AR_REVERSE = Object.fromEntries(Object.entries(AR).map(([k, v]) => [v, k]));
+
 const LangContext = React.createContext('en');
 function tr(key, lang) {
-  if (!lang || lang === 'en' || !key) return key || '';
-  return AR[key] || key;
+  if (!lang || !key) return key || '';
+  if (lang === 'ar') return AR[key] || key;
+  // Reverse-translate Arabic strings stored from a previous Arabic session
+  return AR_REVERSE[key] || key;
 }
 
 function toEnglishNumerals(str) {
