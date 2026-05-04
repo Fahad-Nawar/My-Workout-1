@@ -170,14 +170,14 @@ function History({ history, splits, onBack, onDelete }) {
           const open = openId === sess.id;
           return (
             <div key={sess.id} className="mw-card" style={{ marginBottom: 8, padding: 0, overflow: 'hidden' }}>
-              <button onClick={() => setOpenId(open ? null : sess.id)} style={{ width: '100%', padding: '12px 14px', display: 'flex', alignItems: 'center', gap: 10, textAlign: lang === 'ar' ? 'right' : 'left' }}>
-                <Icon name="chevron-down" size={14} color="var(--text-mute)" style={{ transform: open ? 'rotate(180deg)' : 'none', transition: 'transform .2s', order: lang === 'ar' ? 1 : 0 }}/>
+              <button onClick={() => setOpenId(open ? null : sess.id)} style={{ width: '100%', padding: '12px 14px', display: 'flex', alignItems: 'center', gap: 10, direction: 'ltr' }}>
                 <div style={{ width: 36, height: 36, borderRadius: 10, background: (split?.color || '#6366f1') + '22', color: split?.color || 'var(--accent)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700, fontFamily: 'var(--mono)', fontSize: 13, flexShrink: 0 }}>{split?.icon || '?'}</div>
-                <div style={{ flex: 1 }}>
+                <div style={{ flex: 1, textAlign: lang === 'ar' ? 'right' : 'left', direction: lang === 'ar' ? 'rtl' : 'ltr' }}>
                   <div style={{ fontWeight: 600, fontSize: 13 }}>{tr(split?.name || sess.day, lang)}</div>
                   <div className="mw-mute" style={{ fontSize: 11 }}>{sess.date}</div>
                 </div>
                 <span className="mw-pill">{lang === 'ar' ? `${totalSets} مجموعة` : `${totalSets} sets`}</span>
+                <Icon name="chevron-down" size={14} color="var(--text-mute)" style={{ transform: open ? 'rotate(180deg)' : 'none', transition: 'transform .2s' }}/>
               </button>
               {open && (
                 <div style={{ padding: '0 14px 12px', borderTop: '1px solid var(--border)' }}>
