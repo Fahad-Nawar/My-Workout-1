@@ -146,7 +146,8 @@ function MobileApp({ theme, density, accentHue, onToggleTheme }) {
   } else if (route.name === 'progress') {
     body = <Progress history={app.history} splits={app.splits} onBack={() => setRoute({ name: 'dashboard' })}/>;
   } else if (route.name === 'social') {
-    body = <SocialScreen currentUser={app.activeUser}/>;
+    body = <SocialScreen currentUser={app.activeUser}
+      onCopySplit={split => app.updateSplits({ ...app.splits, [split.id]: { ...split, added: true } })}/>;
   } else if (route.name === 'profile') {
     body = <ProfileScreen user={app.activeUser}
       onSave={app.updateProfile}
@@ -283,7 +284,8 @@ function DesktopApp({ theme, density, onToggleTheme }) {
             <Progress history={app.history} splits={app.splits} onBack={() => setRoute({ name: 'dashboard' })}/>
           )}
           {route.name === 'social' && (
-            <SocialScreen currentUser={app.activeUser}/>
+            <SocialScreen currentUser={app.activeUser}
+              onCopySplit={split => app.updateSplits({ ...app.splits, [split.id]: { ...split, added: true } })}/>
           )}
           {route.name === 'profile' && (
             <ProfileScreen user={app.activeUser}

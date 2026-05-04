@@ -37,32 +37,63 @@ const DEFAULT_SPLITS = {
 const SPLIT_ORDER = ['anterior', 'posterior', 'push', 'pull', 'upper', 'lower'];
 
 const EXERCISE_POOL = [
+  // Chest
   'Shoulder Press','Chest Fly','Incline Chest Press','Bench Press',
-  'Lateral Raises','Front Raises','Triceps','Tricep Pushdown',
-  'Overhead Tricep Ext.','Dips','Abs','Cable Crunch','Hanging Leg Raise',
+  'Flat DB Press','Cable Fly','Pec Deck','Push Up','Dumbbell Pullover',
+  // Shoulders
+  'Lateral Raises','Front Raises','Rear Shoulder','Face Pull',
+  'Arnold Press','Cable Lateral Raise','Reverse Fly','Upright Row',
+  // Triceps
+  'Triceps','Tricep Pushdown','Overhead Tricep Ext.','Dips',
+  'Skull Crusher','Close Grip Bench','Cable Overhead Tricep',
+  // Biceps
+  'Hammer Curl','Bicep Curl','Preacher Curl','Concentration Curl','Wrist',
+  'EZ Bar Curl','Incline Curl','Cable Curl','Spider Curl','Chin Up',
+  // Back
+  'Upper Back','Lat Pulldown','Lat Row Single','Cable Row',
+  'Shrugs','Deadlift','Pull Up','T-Bar Row','Chest Supported Row',
+  // Abs
+  'Abs','Cable Crunch','Hanging Leg Raise','Plank','Russian Twist','Ab Wheel',
+  // Legs
   'Leg Press','Leg Extension','Adductors','Abductors',
   'Squat','Romanian Deadlift','Bulgarian Split Squat',
-  'Upper Back','Lat Pulldown','Lat Row Single','Cable Row',
-  'Shrugs','Rear Shoulder','Face Pull','Hamstrings','Hamstring Curl',
-  'Calf','Standing Calf','Hammer Curl','Bicep Curl',
-  'Preacher Curl','Concentration Curl','Hip Thrust','Glute Kickback','Wrist',
+  'Hack Squat','Goblet Squat','Leg Curl','Sumo Deadlift','Step Up',
+  'Hamstrings','Hamstring Curl','Hip Thrust','Glute Kickback',
+  // Calf
+  'Calf','Standing Calf',
 ];
 
 const MUSCLE_MAP = {
+  // Chest
   'Chest Fly': 'chest', 'Incline Chest Press': 'chest', 'Bench Press': 'chest',
+  'Flat DB Press': 'chest', 'Cable Fly': 'chest', 'Pec Deck': 'chest',
+  'Push Up': 'chest', 'Dumbbell Pullover': 'chest',
+  // Shoulders
   'Shoulder Press': 'shoulder', 'Lateral Raises': 'shoulder', 'Front Raises': 'shoulder',
-  'Rear Shoulder': 'shoulder', 'Face Pull': 'shoulder',
+  'Rear Shoulder': 'shoulder', 'Face Pull': 'shoulder', 'Arnold Press': 'shoulder',
+  'Cable Lateral Raise': 'shoulder', 'Reverse Fly': 'shoulder', 'Upright Row': 'shoulder',
+  // Back
   'Shrugs': 'back', 'Upper Back': 'back', 'Lat Pulldown': 'back',
-  'Lat Row Single': 'back', 'Cable Row': 'back',
+  'Lat Row Single': 'back', 'Cable Row': 'back', 'Deadlift': 'back',
+  'Pull Up': 'back', 'T-Bar Row': 'back', 'Chest Supported Row': 'back',
+  // Triceps
   'Triceps': 'triceps', 'Tricep Pushdown': 'triceps',
   'Overhead Tricep Ext.': 'triceps', 'Dips': 'triceps',
+  'Skull Crusher': 'triceps', 'Close Grip Bench': 'triceps', 'Cable Overhead Tricep': 'triceps',
+  // Biceps
   'Hammer Curl': 'biceps', 'Bicep Curl': 'biceps', 'Preacher Curl': 'biceps',
-  'Concentration Curl': 'biceps', 'Wrist': 'biceps',
+  'Concentration Curl': 'biceps', 'Wrist': 'biceps', 'Chin Up': 'biceps',
+  'EZ Bar Curl': 'biceps', 'Incline Curl': 'biceps', 'Cable Curl': 'biceps', 'Spider Curl': 'biceps',
+  // Abs
   'Abs': 'abs', 'Cable Crunch': 'abs', 'Hanging Leg Raise': 'abs',
+  'Plank': 'abs', 'Russian Twist': 'abs', 'Ab Wheel': 'abs',
+  // Legs
   'Leg Press': 'legs', 'Leg Extension': 'legs', 'Adductors': 'legs', 'Abductors': 'legs',
-  'Squat': 'legs', 'Bulgarian Split Squat': 'legs',
+  'Squat': 'legs', 'Bulgarian Split Squat': 'legs', 'Hack Squat': 'legs',
+  'Goblet Squat': 'legs', 'Leg Curl': 'legs', 'Sumo Deadlift': 'legs', 'Step Up': 'legs',
   'Hamstrings': 'legs', 'Hamstring Curl': 'legs', 'Romanian Deadlift': 'legs',
   'Hip Thrust': 'legs', 'Glute Kickback': 'legs',
+  // Calf
   'Calf': 'calf', 'Standing Calf': 'calf',
 };
 

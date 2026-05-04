@@ -3,7 +3,7 @@
 const { useState: useSo, useEffect: useEo, useMemo: useMo } = React;
 
 // ─── Main Social Screen ───
-function SocialScreen({ currentUser }) {
+function SocialScreen({ currentUser, onCopySplit }) {
   const [friendships, setFriendships] = useSo([]);
   const [loading, setLoading] = useSo(true);
   const [friendDataMap, setFriendDataMap] = useSo({});
@@ -33,7 +33,7 @@ function SocialScreen({ currentUser }) {
   const getFriendId = f => f.requester_id === currentUser.id ? f.addressee_id : f.requester_id;
 
   if (viewFriend) {
-    return <FriendDetail friendId={viewFriend} data={friendDataMap[viewFriend]} onBack={() => setViewFriend(null)}/>;
+    return <FriendDetail friendId={viewFriend} data={friendDataMap[viewFriend]} onBack={() => setViewFriend(null)} onCopySplit={onCopySplit}/>;
   }
 
   return (
@@ -265,7 +265,15 @@ function AddFriendModal({ currentUserId, friendships, onClose, onSent }) {
 }
 
 // ─── Friend Detail ───
-function FriendDetail({ friendId, data, onBack }) {
+function FriendDetail({ friendId, data, onBack, onCopySplit }) {
+  const [copiedId, setCopiedId] = useSo(null);
+
+  const handleCopy = (split) => {
+    onCopySplit && onCopySplit(split);
+    setCopiedId(split.id);
+    setTimeout(() => setCopiedId(null), 2000);
+  };
+
   if (!data) {
     return (
       <div className="mw-fade-in" style={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
@@ -282,20 +290,7 @@ function FriendDetail({ friendId, data, onBack }) {
   const history = data.history || [];
   const weekCounts = weekSetsByMuscle(history);
   const weekSets = MUSCLES.reduce((a, m) => a + (weekCounts[m.id] || 0), 0);
-
-  // simple streak counter
-  const streak = (() => {
-    if (!history.length) return 0;
-    const sorted = [...history].map(s => parseDateStr(s.date)).filter(Boolean).sort((a, b) => b - a);
-    let count = 0;
-    let check = new Date(); check.setHours(0,0,0,0);
-    for (const d of sorted) {
-      const diff = Math.round((check - d) / 86400000);
-      if (diff <= 1) { count++; check = new Date(d); }
-      else break;
-    }
-    return count;
-  })();
+  const friendSplits = Object.values(data.splits || {}).filter(s => s.added !== false);
 
   return (
     <div className="mw-fade-in" style={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
@@ -323,7 +318,6 @@ function FriendDetail({ friendId, data, onBack }) {
             {[
               { label: 'Sessions', value: history.length },
               { label: 'Sets / week', value: weekSets },
-              { label: 'Streak', value: streak + (streak === 1 ? ' day' : ' days') },
             ].map((s, i, arr) => (
               <div key={s.label} style={{ flex: 1, padding: '12px 8px', borderRight: i < arr.length - 1 ? '1px solid var(--border)' : 'none', textAlign: 'center' }}>
                 <div style={{ fontWeight: 700, fontSize: 18, letterSpacing: '-0.02em' }}>{s.value}</div>
@@ -344,6 +338,47 @@ function FriendDetail({ friendId, data, onBack }) {
 
           {/* Weekly volume */}
           <MuscleVolumePanel history={history}/>
+
+          {/* Friend's splits — copyable */}
+          {friendSplits.length > 0 && (
+            <>
+              <div className="mw-eyebrow" style={{ marginBottom: 10, marginTop: 4 }}>Splits</div>
+              {friendSplits.map(split => {
+                const isCopied = copiedId === split.id;
+                return (
+                  <div key={split.id} className="mw-card" style={{ marginBottom: 8, padding: '12px 14px' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8 }}>
+                      <div style={{ width: 36, height: 36, borderRadius: 10, background: (split.color || '#6366f1') + '22', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                        <span style={{ fontWeight: 700, color: split.color || 'var(--accent)', fontFamily: 'var(--mono)', fontSize: 14 }}>{split.icon || split.name?.[0] || '?'}</span>
+                      </div>
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <div style={{ fontWeight: 600, fontSize: 13 }}>{split.name}</div>
+                        <div className="mw-mute" style={{ fontSize: 11 }}>{(split.exercises || []).length} exercises</div>
+                      </div>
+                      <button
+                        className={`mw-btn mw-btn-sm ${isCopied ? '' : 'mw-btn-primary'}`}
+                        style={isCopied ? { color: '#22c55e', borderColor: '#22c55e' } : {}}
+                        onClick={() => !isCopied && handleCopy(split)}
+                      >
+                        {isCopied ? <><Icon name="check" size={11}/> Copied</> : 'Copy'}
+                      </button>
+                    </div>
+                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4 }}>
+                      {(split.exercises || []).map(ex => {
+                        const muscle = MUSCLE_MAP[ex];
+                        const muscleColor = MUSCLES.find(m => m.id === muscle)?.color;
+                        return (
+                          <span key={ex} className="mw-chip" style={{ fontSize: 10, background: muscleColor ? muscleColor + '18' : undefined, color: muscleColor || undefined }}>
+                            {ex}
+                          </span>
+                        );
+                      })}
+                    </div>
+                  </div>
+                );
+              })}
+            </>
+          )}
 
           {/* Recent sessions */}
           {history.length > 0 && (
