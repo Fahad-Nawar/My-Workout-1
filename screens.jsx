@@ -253,6 +253,7 @@ function Logger({ split, history, onBack, onSave, onEditSplit }) {
   const [expanded, setExpanded] = useState(split.exercises[0] || null);
   const [saving, setSaving] = useState(false);
   const [toast, setToast] = useState(null);
+  const [showTimer, setShowTimer] = useState(false);
 
   const updateSet = (ex, i, field, value) => {
     setState(s => ({
@@ -260,7 +261,11 @@ function Logger({ split, history, onBack, onSave, onEditSplit }) {
       [ex]: s[ex].map((set, idx) => idx === i ? { ...set, [field]: value } : set),
     }));
   };
-  const addSet = (ex) => setState(s => ({ ...s, [ex]: [...(s[ex] || []), { weight: '', reps: '' }] }));
+  const addSet = (ex) => setState(s => {
+    const sets = s[ex] || [];
+    const last = sets[sets.length - 1] || {};
+    return { ...s, [ex]: [...sets, { weight: last.weight || '', reps: last.reps || '' }] };
+  });
   const removeSet = (ex, i) => setState(s => ({ ...s, [ex]: s[ex].filter((_, idx) => idx !== i) }));
   const bumpWeight = (ex, i, delta) => {
     setState(s => ({
@@ -303,6 +308,9 @@ function Logger({ split, history, onBack, onSave, onEditSplit }) {
           <div className="mw-eyebrow">{todayStr()}</div>
           <div style={{ fontWeight: 700, fontSize: 16 }}>{split.name} <span className="mw-mute" style={{ fontSize: 12, fontWeight: 400 }}>· {filledCount}/{split.exercises.length}</span></div>
         </div>
+        <button className="mw-btn mw-btn-icon" onClick={() => setShowTimer(true)} title="Rest timer">
+          <Icon name="timer" size={16} color="var(--text-dim)"/>
+        </button>
         <button className="mw-btn mw-btn-icon" onClick={onEditSplit} title="Edit split">
           <Icon name="edit" size={14} color="var(--text-dim)"/>
         </button>
@@ -338,6 +346,33 @@ function Logger({ split, history, onBack, onSave, onEditSplit }) {
       </div>
 
       {toast && <div className="mw-toast" style={{ borderColor: toast.color, color: toast.color }}>{toast.msg}</div>}
+      {showTimer && <RestTimer onClose={() => setShowTimer(false)}/>}
+    </div>
+  );
+}
+
+function RestTimer({ onClose }) {
+  const [secs, setSecs] = useState(90);
+  useEffect(() => {
+    if (secs <= 0) { onClose(); return; }
+    const t = setTimeout(() => setSecs(s => s - 1), 1000);
+    return () => clearTimeout(t);
+  }, [secs]);
+  const m = Math.floor(secs / 60);
+  const s = secs % 60;
+  return (
+    <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,.75)', backdropFilter: 'blur(12px)', zIndex: 80, display: 'flex', alignItems: 'center', justifyContent: 'center' }} onClick={onClose}>
+      <div onClick={e => e.stopPropagation()} style={{ background: 'var(--surface)', borderRadius: 28, padding: '36px 48px', textAlign: 'center', border: '1px solid var(--border)', minWidth: 240 }}>
+        <div className="mw-eyebrow" style={{ marginBottom: 12 }}>Rest Timer</div>
+        <div style={{ fontSize: 80, fontWeight: 800, fontFamily: 'var(--mono)', letterSpacing: '-0.04em', lineHeight: 1, color: secs <= 10 ? 'var(--danger)' : 'var(--text)' }}>
+          {m}:{String(s).padStart(2, '0')}
+        </div>
+        <div style={{ marginTop: 24, display: 'flex', gap: 8, justifyContent: 'center' }}>
+          <button className="mw-btn mw-btn-sm" onClick={() => setSecs(prev => prev + 30)}>+30s</button>
+          <button className="mw-btn mw-btn-primary mw-btn-sm" onClick={onClose}>Done</button>
+        </div>
+        <div className="mw-mute" style={{ fontSize: 11, marginTop: 14 }}>Tap outside to dismiss</div>
+      </div>
     </div>
   );
 }
@@ -355,6 +390,8 @@ function lastSetOf(history, exName) {
 
 function ExerciseCard({ name, index, sets, expanded, onToggle, onUpdate, onAdd, onRemove, onBump, lastSet }) {
   const filled = sets.filter(s => s.weight || s.reps).length;
+  const currentMax = Math.max(...sets.map(s => parseFloat(s.weight) || 0));
+  const isPB = currentMax > 0 && (parseFloat(lastSet?.weight) || 0) > 0 && currentMax > parseFloat(lastSet.weight);
   return (
     <div className="mw-card" style={{ marginBottom: 8, padding: 0, overflow: 'hidden' }}>
       <button onClick={onToggle} style={{ width: '100%', padding: '12px 14px', display: 'flex', alignItems: 'center', gap: 10, textAlign: 'left' }}>
@@ -363,6 +400,7 @@ function ExerciseCard({ name, index, sets, expanded, onToggle, onUpdate, onAdd, 
           <div style={{ fontWeight: 600, fontSize: 14 }}>{name}</div>
           {lastSet && !expanded && <div className="mw-mute" style={{ fontSize: 11, marginTop: 1 }}>last: {lastSet.weight}kg × {lastSet.reps}</div>}
         </div>
+        {isPB && <span className="mw-chip" style={{ background: '#22c55e22', color: '#22c55e' }}>↑ PB</span>}
         {filled > 0 && <span className="mw-chip">{filled} set{filled > 1 ? 's' : ''}</span>}
         <Icon name="chevron-down" size={14} color="var(--text-mute)"
           style={{ transform: expanded ? 'rotate(180deg)' : 'none', transition: 'transform .2s' }}/>

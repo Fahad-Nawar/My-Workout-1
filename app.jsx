@@ -161,7 +161,6 @@ function MobileApp({ theme, density, accentHue }) {
 function DesktopApp({ theme, density }) {
   const app = useAppState();
   const [route, setRoute] = useS({ name: 'dashboard' });
-  const [editorSplit, setEditorSplit] = useS(null);
 
   useE(() => { if (!app.activeUser) setRoute({ name: 'login' }); else if (route.name === 'login') setRoute({ name: 'dashboard' }); }, [app.activeUser]);
 
