@@ -163,22 +163,26 @@ function CustomSplitModal({ onClose, onCreate }) {
 
 // ────────────────────────── History ──────────────────────────
 function exportHistoryToExcel(history, splits) {
-  const rows = [];
+  // Collect all unique exercise names across all sessions
+  const allExercises = [];
   history.forEach(sess => {
-    const splitName = splits[sess.day]?.name || sess.day;
     sess.exercises?.forEach(ex => {
-      ex.sets?.forEach((set, i) => {
-        rows.push({
-          Date: sess.date,
-          Split: splitName,
-          Exercise: ex.name,
-          Set: i + 1,
-          'Weight (kg)': set.weight || '',
-          Reps: set.reps || '',
-        });
-      });
+      if (!allExercises.includes(ex.name)) allExercises.push(ex.name);
     });
   });
+
+  const rows = history.map(sess => {
+    const row = {
+      Date: sess.date,
+      Split: splits[sess.day]?.name || sess.day,
+    };
+    allExercises.forEach(exName => {
+      const ex = sess.exercises?.find(e => e.name === exName);
+      row[exName] = ex?.sets?.map(s => `${s.weight || '–'}×${s.reps || '–'}`).join(', ') || '';
+    });
+    return row;
+  });
+
   const ws = XLSX.utils.json_to_sheet(rows);
   const wb = XLSX.utils.book_new();
   XLSX.utils.book_append_sheet(wb, ws, 'Workout History');
