@@ -337,7 +337,21 @@ async function fetchUserData(userId) {
     .select('name, splits, history, bio, avatar_url')
     .eq('user_id', userId)
     .single();
-  if (data) return { ...data, avatarUrl: data.avatar_url || '' };
+  if (data) {
+    // Inject any new default splits the user doesn't have yet
+    let splits = data.splits || {};
+    let changed = false;
+    SPLIT_ORDER.forEach(id => {
+      if (!splits[id]) {
+        const s = JSON.parse(JSON.stringify(DEFAULT_SPLITS[id]));
+        s.added = false;
+        splits[id] = s;
+        changed = true;
+      }
+    });
+    if (changed) await sb.from('user_data').update({ splits }).eq('user_id', userId);
+    return { ...data, splits, avatarUrl: data.avatar_url || '' };
+  }
   // First login after email confirmation — seed row from user metadata
   const { data: { user } } = await sb.auth.getUser();
   const name = user?.user_metadata?.name || 'User';
