@@ -32,9 +32,19 @@ const DEFAULT_SPLITS = {
     id: 'lower', name: 'Lower', subtitle: 'Legs · Glutes', icon: '⤵', color: '#ef4444',
     exercises: ['Leg Press','Leg Extension','Adductors','Hip Thrust','Calf'],
   },
+  pro: {
+    id: 'pro', name: 'Pro', subtitle: 'Advanced · Compounds', icon: '★', color: '#f59e0b',
+    recommended: true,
+    exercises: ['Bench Press','Incline Chest Press','Shoulder Press','Lateral Raises','Pull Up','T-Bar Row','Squat','Romanian Deadlift','Deadlift','Triceps','Hammer Curl'],
+  },
+  arms: {
+    id: 'arms', name: 'Arms', subtitle: 'Biceps · Triceps', icon: 'Ar', color: '#ec4899',
+    recommended: true,
+    exercises: ['Hammer Curl','Bicep Curl','Preacher Curl','Cable Curl','Wrist','Triceps','Tricep Pushdown','Overhead Tricep Ext.','Dips','JM press'],
+  },
 };
 
-const SPLIT_ORDER = ['anterior', 'posterior', 'push', 'pull', 'upper', 'lower'];
+const SPLIT_ORDER = ['anterior', 'posterior', 'push', 'pull', 'upper', 'lower', 'pro', 'arms'];
 
 const EXERCISE_POOL = [
   // Chest
@@ -127,6 +137,7 @@ const AR = {
   // Split names
   'Anterior':'الجزء الأمامي','Posterior':'الجزء الخلفي',
   'Push':'دفع','Pull':'سحب','Upper':'الجزء العلوي','Lower':'الجزء السفلي',
+  'Pro':'احترافي','Arms':'الذراعان',
   // Split subtitles
   'Front of body':'مقدمة الجسم','Back of body':'خلفية الجسم',
   'Chest · Shoulders · Tri':'صدر · كتف · ترايسبس','Back · Biceps':'ظهر · بايسبس',
