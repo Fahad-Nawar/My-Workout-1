@@ -162,6 +162,29 @@ function CustomSplitModal({ onClose, onCreate }) {
 }
 
 // ────────────────────────── History ──────────────────────────
+function exportHistoryToExcel(history, splits) {
+  const rows = [];
+  history.forEach(sess => {
+    const splitName = splits[sess.day]?.name || sess.day;
+    sess.exercises?.forEach(ex => {
+      ex.sets?.forEach((set, i) => {
+        rows.push({
+          Date: sess.date,
+          Split: splitName,
+          Exercise: ex.name,
+          Set: i + 1,
+          'Weight (kg)': set.weight || '',
+          Reps: set.reps || '',
+        });
+      });
+    });
+  });
+  const ws = XLSX.utils.json_to_sheet(rows);
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, 'Workout History');
+  XLSX.writeFile(wb, 'workout-history.xlsx');
+}
+
 function History({ history, splits, onBack, onDelete }) {
   const lang = React.useContext(LangContext);
   const [openId, setOpenId] = useState2(null);
@@ -175,6 +198,12 @@ function History({ history, splits, onBack, onDelete }) {
             {lang === 'ar' ? `${history.length} جلسة` : `${history.length} sessions`}
           </div>
         </div>
+        {history.length > 0 && (
+          <button className="mw-btn mw-btn-sm mw-btn-ghost" onClick={() => exportHistoryToExcel(history, splits)}
+            style={{ flexShrink: 0 }}>
+            <Icon name="download" size={12}/> {tr('Export to Excel', lang)}
+          </button>
+        )}
       </div>
       <div className="mw-scroll" style={{ flex: 1, padding: '16px' }}>
         {history.length === 0 && (

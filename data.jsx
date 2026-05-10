@@ -158,7 +158,7 @@ const AR = {
   'Add from library':'إضافة من المكتبة',
   // History / Progress screens
   'Progress':'التقدم','No sessions yet — log your first workout!':'لا توجد جلسات بعد — سجّل أول تمرين لك!',
-  'Delete session':'حذف الجلسة',
+  'Delete session':'حذف الجلسة','Export to Excel':'تصدير إلى Excel',
   // Misc
   'Social':'اجتماعي','Add friend':'إضافة صديق','Bio':'نبذة','Loading...':'جارٍ التحميل...',
   'Wants to be your friend':'يريد إضافتك كصديق','Decline':'رفض','Accept':'قبول',
