@@ -181,25 +181,34 @@ function exportHistoryToExcel(history, splits) {
   });
 
   const rows = [];
+  const merges = [];
+  let rowIndex = 1; // row 0 is the header
+
   [...sessionMap.values()].forEach(sess => {
     const splitName = splits[sess.day]?.name || sess.day;
-    let firstRowOfSession = true;
+    const sessionStart = rowIndex;
     sess.exercises.forEach(ex => {
       ex.sets?.forEach((set, i) => {
         rows.push({
-          Date: firstRowOfSession ? sess.date : '',
-          Split: firstRowOfSession ? splitName : '',
+          Date: sess.date,
+          Split: splitName,
           Exercise: ex.name,
           Set: i + 1,
           'Weight (kg)': set.weight || '',
           Reps: set.reps || '',
         });
-        firstRowOfSession = false;
+        rowIndex++;
       });
     });
+    const sessionEnd = rowIndex - 1;
+    if (sessionEnd > sessionStart) {
+      merges.push({ s: { r: sessionStart, c: 0 }, e: { r: sessionEnd, c: 0 } }); // Date
+      merges.push({ s: { r: sessionStart, c: 1 }, e: { r: sessionEnd, c: 1 } }); // Split
+    }
   });
 
   const ws = XLSX.utils.json_to_sheet(rows);
+  if (merges.length) ws['!merges'] = merges;
   const wb = XLSX.utils.book_new();
   XLSX.utils.book_append_sheet(wb, ws, 'Workout History');
   XLSX.writeFile(wb, 'workout-history.xlsx');
