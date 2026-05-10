@@ -38,9 +38,9 @@ const DEFAULT_SPLITS = {
     exercises: ['Bench Press','Incline Chest Press','Shoulder Press','Lateral Raises','Pull Up','T-Bar Row','Squat','Romanian Deadlift','Deadlift','Triceps','Hammer Curl'],
   },
   arms: {
-    id: 'arms', name: 'Arms', subtitle: 'Biceps · Triceps', icon: 'Ar', color: '#ec4899',
+    id: 'arms', name: 'Arms', subtitle: 'Shoulders · Biceps · Triceps', icon: 'Ar', color: '#ec4899',
     recommended: true,
-    exercises: ['Hammer Curl','Bicep Curl','Preacher Curl','Cable Curl','Wrist','Triceps','Tricep Pushdown','Overhead Tricep Ext.','Dips','JM press'],
+    exercises: ['Hammer Curl','Preacher Curl','Wrist','Tricep Pushdown','Overhead Tricep Ext.','Shoulder Press','Lateral Raises','Rear Shoulder'],
   },
 };
 
@@ -408,9 +408,10 @@ function makeId() { return Date.now() + Math.floor(Math.random() * 1000); }
 
 function defaultUserSplits() {
   const out = {};
-  SPLIT_ORDER.forEach((id, i) => {
+  const defaultAdded = ['push', 'pull', 'lower'];
+  SPLIT_ORDER.forEach((id) => {
     const s = JSON.parse(JSON.stringify(DEFAULT_SPLITS[id]));
-    s.added = i < 2;
+    s.added = defaultAdded.includes(id);
     out[id] = s;
   });
   return out;
