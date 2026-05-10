@@ -163,22 +163,42 @@ function CustomSplitModal({ onClose, onCreate }) {
 
 // ────────────────────────── History ──────────────────────────
 function exportHistoryToExcel(history, splits) {
-  const rows = [];
+  // Deduplicate by ID, then merge sessions sharing the same date+split
+  const seenIds = new Set();
+  const sessionMap = new Map();
   history.forEach(sess => {
+    if (seenIds.has(sess.id)) return;
+    seenIds.add(sess.id);
+    const key = `${sess.date}__${sess.day}`;
+    if (sessionMap.has(key)) {
+      const existing = sessionMap.get(key);
+      const exMap = new Map(existing.exercises.map(e => [e.name, e]));
+      (sess.exercises || []).forEach(e => { if (!exMap.has(e.name)) exMap.set(e.name, e); });
+      existing.exercises = [...exMap.values()];
+    } else {
+      sessionMap.set(key, { ...sess, exercises: [...(sess.exercises || [])] });
+    }
+  });
+
+  const rows = [];
+  [...sessionMap.values()].forEach(sess => {
     const splitName = splits[sess.day]?.name || sess.day;
-    sess.exercises?.forEach(ex => {
+    let firstRowOfSession = true;
+    sess.exercises.forEach(ex => {
       ex.sets?.forEach((set, i) => {
         rows.push({
-          Date: sess.date,
-          Split: splitName,
+          Date: firstRowOfSession ? sess.date : '',
+          Split: firstRowOfSession ? splitName : '',
           Exercise: ex.name,
           Set: i + 1,
           'Weight (kg)': set.weight || '',
           Reps: set.reps || '',
         });
+        firstRowOfSession = false;
       });
     });
   });
+
   const ws = XLSX.utils.json_to_sheet(rows);
   const wb = XLSX.utils.book_new();
   XLSX.utils.book_append_sheet(wb, ws, 'Workout History');
