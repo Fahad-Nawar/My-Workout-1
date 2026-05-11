@@ -210,23 +210,63 @@ function exportHistoryToExcel(history, splits) {
   const ws = XLSX.utils.json_to_sheet(rows);
   if (merges.length) ws['!merges'] = merges;
 
-  const totalRows = rows.length + 1;
-  const headerStyle = { font: { bold: true, sz: 11 }, alignment: { horizontal: 'center', vertical: 'center' }, fill: { fgColor: { rgb: 'D9D9D9' } } };
-  const centerStyle = { alignment: { horizontal: 'center', vertical: 'center', wrapText: true } };
+  const border = {
+    top:    { style: 'thin', color: { rgb: 'BDBDBD' } },
+    bottom: { style: 'thin', color: { rgb: 'BDBDBD' } },
+    left:   { style: 'thin', color: { rgb: 'BDBDBD' } },
+    right:  { style: 'thin', color: { rgb: 'BDBDBD' } },
+  };
 
-  // Style header row
+  const headerStyle = {
+    font: { bold: true, sz: 11, color: { rgb: 'FFFFFF' } },
+    fill: { fgColor: { rgb: '3B4A6B' } },
+    alignment: { horizontal: 'center', vertical: 'center' },
+    border,
+  };
+  const dateStyle = {
+    font: { bold: true, sz: 10, color: { rgb: '2D3561' } },
+    fill: { fgColor: { rgb: 'E8EAF6' } },
+    alignment: { horizontal: 'center', vertical: 'center', wrapText: true },
+    border,
+  };
+  const splitStyle = {
+    font: { bold: true, sz: 10, color: { rgb: '2D3561' } },
+    fill: { fgColor: { rgb: 'E8EAF6' } },
+    alignment: { horizontal: 'center', vertical: 'center' },
+    border,
+  };
+  const exerciseStyle = {
+    font: { bold: true, sz: 10 },
+    fill: { fgColor: { rgb: 'F5F5F5' } },
+    alignment: { horizontal: 'left', vertical: 'center' },
+    border,
+  };
+  const dataStyle = {
+    font: { sz: 10 },
+    alignment: { horizontal: 'center', vertical: 'center' },
+    border,
+  };
+
+  const totalRows = rows.length + 1;
+
+  // Header row
   ['A1','B1','C1','D1','E1','F1'].forEach(ref => { if (ws[ref]) ws[ref].s = headerStyle; });
 
-  // Center Date (col A) and Split (col B) for all data rows
+  // Data rows
   for (let r = 2; r <= totalRows; r++) {
-    if (ws[`A${r}`]) ws[`A${r}`].s = centerStyle;
-    if (ws[`B${r}`]) ws[`B${r}`].s = centerStyle;
+    if (ws[`A${r}`]) ws[`A${r}`].s = dateStyle;
+    if (ws[`B${r}`]) ws[`B${r}`].s = splitStyle;
+    if (ws[`C${r}`]) ws[`C${r}`].s = exerciseStyle;
+    if (ws[`D${r}`]) ws[`D${r}`].s = dataStyle;
+    if (ws[`E${r}`]) ws[`E${r}`].s = dataStyle;
+    if (ws[`F${r}`]) ws[`F${r}`].s = dataStyle;
   }
 
-  // Column widths
-  ws['!cols'] = [{ wch: 22 }, { wch: 14 }, { wch: 24 }, { wch: 6 }, { wch: 12 }, { wch: 6 }];
+  // Column widths & row heights
+  ws['!cols'] = [{ wch: 22 }, { wch: 14 }, { wch: 26 }, { wch: 6 }, { wch: 13 }, { wch: 7 }];
+  ws['!rows'] = [{ hpt: 26 }, ...Array(rows.length).fill({ hpt: 18 })];
 
-  // Page layout — A4, portrait, fit to 1 page wide
+  // Page layout — A4, portrait
   ws['!pageSetup'] = { paperSize: 9, orientation: 'portrait', fitToPage: true, fitToWidth: 1, fitToHeight: 0 };
   ws['!margins'] = { left: 0.5, right: 0.5, top: 0.75, bottom: 0.75, header: 0.3, footer: 0.3 };
 
