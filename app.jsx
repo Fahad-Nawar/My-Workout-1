@@ -22,6 +22,7 @@ function useAppState() {
   const [history, setHistory] = useS([]);
   const [bio, setBio] = useS('');
   const [avatarUrl, setAvatarUrl] = useS('');
+  const [volumeTargets, setVolumeTargets] = useS(() => loadVolumeTargets() || Object.fromEntries(MUSCLES.map(m => [m.id, m.target])));
 
   useE(() => {
     sb.auth.getSession().then(({ data: { session } }) => {
@@ -101,10 +102,12 @@ function useAppState() {
     sessionCount: history.length, bio, avatarUrl,
   } : null;
 
+  const updateVolumeTargets = (next) => { setVolumeTargets(next); saveVolumeTargets(next); };
+
   return {
-    loading, activeUser, splits, history,
+    loading, activeUser, splits, history, volumeTargets,
     login: authSignIn, signup: authSignUp, logout: authSignOut,
-    updateSplits, saveSession, deleteSession, toggleSplit, updateProfile,
+    updateSplits, saveSession, deleteSession, toggleSplit, updateProfile, updateVolumeTargets,
   };
 }
 
@@ -150,11 +153,11 @@ function MobileApp({ theme, density, accentHue, onToggleTheme, lang, onToggleLan
       onSave={(exs) => { app.saveSession(route.splitId, exs); }}
       onEditSplit={() => setRoute({ name: 'edit' })}/>;
   } else if (route.name === 'edit') {
-    body = <EditSplits splits={app.splits} onSave={app.updateSplits} onBack={() => setRoute({ name: 'dashboard' })}/>;
+    body = <EditSplits splits={app.splits} onSave={app.updateSplits} onBack={() => setRoute({ name: 'dashboard' })} volumeTargets={app.volumeTargets} onSaveTargets={app.updateVolumeTargets}/>;
   } else if (route.name === 'history') {
     body = <History history={app.history} splits={app.splits} onBack={() => setRoute({ name: 'dashboard' })} onDelete={app.deleteSession}/>;
   } else if (route.name === 'progress') {
-    body = <Progress history={app.history} splits={app.splits} onBack={() => setRoute({ name: 'dashboard' })}/>;
+    body = <Progress history={app.history} splits={app.splits} onBack={() => setRoute({ name: 'dashboard' })} volumeTargets={app.volumeTargets}/>;
   } else if (route.name === 'social') {
     body = <SocialScreen currentUser={app.activeUser}
       onCopySplit={split => app.updateSplits({ ...app.splits, [split.id]: { ...split, added: true } })}/>;
@@ -278,7 +281,7 @@ function DesktopApp({ theme, density, onToggleTheme, lang, onToggleLang }) {
 
         <main style={{ position: 'relative', overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
           {route.name === 'dashboard' && (
-            <DesktopDashboard user={app.activeUser} splits={app.splits} history={app.history}
+            <DesktopDashboard user={app.activeUser} splits={app.splits} history={app.history} volumeTargets={app.volumeTargets}
               onPickSplit={(id) => setRoute({ name: 'logger', splitId: id })}
               onEditSplits={() => setRoute({ name: 'edit' })}
               onToggleSplit={app.toggleSplit}
@@ -291,13 +294,13 @@ function DesktopApp({ theme, density, onToggleTheme, lang, onToggleLang }) {
               onEditSplit={() => setRoute({ name: 'edit' })}/>
           )}
           {route.name === 'edit' && (
-            <EditSplits splits={app.splits} onSave={app.updateSplits} onBack={() => setRoute({ name: 'dashboard' })}/>
+            <EditSplits splits={app.splits} onSave={app.updateSplits} onBack={() => setRoute({ name: 'dashboard' })} volumeTargets={app.volumeTargets} onSaveTargets={app.updateVolumeTargets}/>
           )}
           {route.name === 'history' && (
             <History history={app.history} splits={app.splits} onBack={() => setRoute({ name: 'dashboard' })} onDelete={app.deleteSession}/>
           )}
           {route.name === 'progress' && (
-            <Progress history={app.history} splits={app.splits} onBack={() => setRoute({ name: 'dashboard' })}/>
+            <Progress history={app.history} splits={app.splits} onBack={() => setRoute({ name: 'dashboard' })} volumeTargets={app.volumeTargets}/>
           )}
           {route.name === 'social' && (
             <SocialScreen currentUser={app.activeUser}
@@ -315,7 +318,7 @@ function DesktopApp({ theme, density, onToggleTheme, lang, onToggleLang }) {
   );
 }
 
-function DesktopDashboard({ user, splits, history, onPickSplit, onEditSplits, onGo, onToggleSplit }) {
+function DesktopDashboard({ user, splits, history, volumeTargets, onPickSplit, onEditSplits, onGo, onToggleSplit }) {
   const lang = React.useContext(LangContext);
   const isAr = lang === 'ar';
   const allList = SPLIT_ORDER.map(id => splits[id]).filter(Boolean);
@@ -397,7 +400,7 @@ function DesktopDashboard({ user, splits, history, onPickSplit, onEditSplits, on
         </div>
 
         <div>
-          <DesktopMuscleVolume history={history}/>
+          <DesktopMuscleVolume history={history} volumeTargets={volumeTargets}/>
         </div>
       </div>
 
@@ -412,12 +415,13 @@ function DesktopDashboard({ user, splits, history, onPickSplit, onEditSplits, on
   );
 }
 
-function DesktopMuscleVolume({ history }) {
+function DesktopMuscleVolume({ history, volumeTargets }) {
   const lang = React.useContext(LangContext);
   const counts = useM(() => weekSetsByMuscle(history), [history]);
   const today = new Date();
   const dow = today.getDay();
   const daysLeft = (4 - dow + 7) % 7;
+  const targets = volumeTargets || Object.fromEntries(MUSCLES.map(m => [m.id, m.target]));
   const totalSets = MUSCLES.reduce((a, m) => a + (counts[m.id] || 0), 0);
 
   return (
@@ -438,8 +442,9 @@ function DesktopMuscleVolume({ history }) {
       <div style={{ display: 'flex', flexDirection: 'column', gap: 9 }}>
         {MUSCLES.map(m => {
           const count = counts[m.id] || 0;
-          const pct = Math.min(count / m.target, 1);
-          const done = count >= m.target;
+          const target = targets[m.id] ?? m.target;
+          const pct = Math.min(count / target, 1);
+          const done = count >= target;
           return (
             <div key={m.id}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 3 }}>
@@ -448,7 +453,7 @@ function DesktopMuscleVolume({ history }) {
                   <span style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-dim)' }}>{tr(m.label, lang)}</span>
                 </div>
                 <span style={{ fontSize: 11, fontFamily: 'var(--mono)', color: done ? '#22c55e' : 'var(--text-mute)' }}>
-                  {count}<span style={{ opacity: 0.5 }}>/{m.target}</span>
+                  {count}<span style={{ opacity: 0.5 }}>/{target}</span>
                 </span>
               </div>
               <div style={{ height: 4, background: 'var(--border)', borderRadius: 2, overflow: 'hidden' }}>

@@ -268,6 +268,13 @@ function allWeeksByMuscle(history) {
   return [...weeks.values()].sort((a, b) => b.friday - a.friday);
 }
 
+function loadVolumeTargets() {
+  try { return JSON.parse(localStorage.getItem('mw-volume-targets') || 'null'); } catch { return null; }
+}
+function saveVolumeTargets(targets) {
+  localStorage.setItem('mw-volume-targets', JSON.stringify(targets));
+}
+
 // ────────────────────────── utils (shared across screens) ──────────────────────────
 function colorFromName(name) {
   const palette = ['#6366f1','#a855f7','#06b6d4','#10b981','#f59e0b','#ef4444','#ec4899','#8b5cf6'];
@@ -465,6 +472,7 @@ Object.assign(window, {
   fetchUserData, pushUserSplits, pushUserHistory, pushUserProfile, pushUserName, checkUsernameAvailable, uploadAvatar,
   todayStr, makeId, defaultUserSplits, seedDemoSession,
   parseDateStr, weekSetsByMuscle, allWeeksByMuscle,
+  loadVolumeTargets, saveVolumeTargets,
   searchUsers, fetchFriendships, sendFriendRequest,
   respondToRequest, removeFriend, fetchFriendData,
 });

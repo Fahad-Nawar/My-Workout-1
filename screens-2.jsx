@@ -3,13 +3,16 @@
 const { useState: useState2, useEffect: useEffect2, useMemo: useMemo2, useRef: useRef2 } = React;
 
 // ────────────────────────── Edit Split ──────────────────────────
-function EditSplits({ splits, onSave, onBack }) {
+function EditSplits({ splits, onSave, onBack, volumeTargets, onSaveTargets }) {
   const lang = React.useContext(LangContext);
   const [working, setWorking] = useState2(() => JSON.parse(JSON.stringify(splits)));
   const [active, setActive] = useState2(SPLIT_ORDER[0]);
   const [showCustom, setShowCustom] = useState2(false);
+  const [workingTargets, setWorkingTargets] = useState2(() =>
+    volumeTargets || Object.fromEntries(MUSCLES.map(m => [m.id, m.target]))
+  );
 
-  const save = () => { onSave(working); onBack(); };
+  const save = () => { onSave(working); if (onSaveTargets) onSaveTargets(workingTargets); onBack(); };
   const list = Object.values(working);
   const cur = working[active];
 
@@ -61,9 +64,41 @@ function EditSplits({ splits, onSave, onBack }) {
         <button className="mw-btn mw-btn-sm mw-btn-ghost" onClick={() => setShowCustom(true)} style={{ flex: 'none' }}>
           <Icon name="plus" size={12}/> {tr('Custom', lang)}
         </button>
+        <button className="mw-btn mw-btn-sm" onClick={() => setActive('__targets')} style={{ flex: 'none', background: active === '__targets' ? 'var(--accent-soft)' : 'var(--surface)', color: active === '__targets' ? 'var(--accent)' : 'var(--text-dim)', borderColor: active === '__targets' ? 'var(--accent)' : 'var(--border)' }}>
+          <Icon name="flame" size={11}/> {lang === 'ar' ? 'أهداف الحجم' : 'Volume Goals'}
+        </button>
       </div>
 
-      {cur && (
+      {active === '__targets' && (
+        <div className="mw-scroll" style={{ flex: 1, padding: '16px' }}>
+          <div className="mw-eyebrow" style={{ marginBottom: 4 }}>{lang === 'ar' ? 'الحد الأدنى الأسبوعي (مجموعات)' : 'Weekly minimum sets per muscle'}</div>
+          <div className="mw-mute" style={{ fontSize: 11, marginBottom: 16 }}>{lang === 'ar' ? 'اضبط الهدف الأسبوعي لكل مجموعة عضلية' : 'Set your weekly set target for each muscle group'}</div>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+            {MUSCLES.map(m => {
+              const val = workingTargets[m.id] ?? m.target;
+              return (
+                <div key={m.id} style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                  <div style={{ width: 10, height: 10, borderRadius: '50%', background: m.color, flexShrink: 0 }}/>
+                  <div style={{ flex: 1, fontWeight: 600, fontSize: 13 }}>{tr(m.label, lang)}</div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                    <button className="mw-btn mw-btn-icon" style={{ width: 28, height: 28 }}
+                      onClick={() => setWorkingTargets(t => ({ ...t, [m.id]: Math.max(1, (t[m.id] ?? m.target) - 1) }))}>
+                      <Icon name="minus" size={12}/>
+                    </button>
+                    <span style={{ fontFamily: 'var(--mono)', fontWeight: 700, fontSize: 15, minWidth: 24, textAlign: 'center' }}>{val}</span>
+                    <button className="mw-btn mw-btn-icon" style={{ width: 28, height: 28 }}
+                      onClick={() => setWorkingTargets(t => ({ ...t, [m.id]: (t[m.id] ?? m.target) + 1 }))}>
+                      <Icon name="plus" size={12}/>
+                    </button>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
+      {cur && active !== '__targets' && (
         <div className="mw-scroll" style={{ flex: 1, padding: '16px' }}>
           <div className="mw-eyebrow" style={{ marginBottom: 8 }}>
             {lang === 'ar' ? `في هذا البرنامج · ${cur.exercises.length}` : `In this split · ${cur.exercises.length}`}
@@ -349,9 +384,10 @@ function History({ history, splits, onBack, onDelete }) {
 }
 
 // ────────────────────────── Muscle Volume Panel ──────────────────────────
-function MuscleVolumePanel({ history }) {
+function MuscleVolumePanel({ history, volumeTargets }) {
   const lang = React.useContext(LangContext);
   const counts = useMemo2(() => weekSetsByMuscle(history), [history]);
+  const targets = volumeTargets || Object.fromEntries(MUSCLES.map(m => [m.id, m.target]));
   const today = new Date();
   const dow = today.getDay();
   const daysLeft = (4 - dow + 7) % 7; // 0 on Thu (resets tomorrow = Fri), 6 on Fri
@@ -372,8 +408,9 @@ function MuscleVolumePanel({ history }) {
       <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
         {MUSCLES.map(m => {
           const count = counts[m.id] || 0;
-          const pct = Math.min(count / m.target, 1);
-          const done = count >= m.target;
+          const target = targets[m.id] ?? m.target;
+          const pct = Math.min(count / target, 1);
+          const done = count >= target;
           return (
             <div key={m.id}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 }}>
@@ -383,7 +420,7 @@ function MuscleVolumePanel({ history }) {
                 </div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
                   <span style={{ fontSize: 13, fontFamily: 'var(--mono)', color: done ? '#22c55e' : 'var(--text)', fontWeight: 700 }}>{count}</span>
-                  <span style={{ fontSize: 11, color: 'var(--text-mute)', fontFamily: 'var(--mono)' }}>/ {m.target}</span>
+                  <span style={{ fontSize: 11, color: 'var(--text-mute)', fontFamily: 'var(--mono)' }}>/ {target}</span>
                   {done && <span className="mw-chip" style={{ background: '#22c55e22', color: '#22c55e', fontSize: 9, padding: '2px 6px' }}>done</span>}
                 </div>
               </div>
@@ -402,7 +439,7 @@ function MuscleVolumePanel({ history }) {
 }
 
 // ────────────────────────── Past Week Card ──────────────────────────
-function PastWeekCard({ week, lang }) {
+function PastWeekCard({ week, lang, volumeTargets }) {
   const [open, setOpen] = useState2(false);
   const hasSets = week.totalSets > 0;
   return (
@@ -423,8 +460,9 @@ function PastWeekCard({ week, lang }) {
               {MUSCLES.map(m => {
                 const count = week.counts[m.id] || 0;
                 if (count === 0) return null;
-                const pct = Math.min(count / m.target, 1);
-                const done = count >= m.target;
+                const target = (volumeTargets && volumeTargets[m.id] != null) ? volumeTargets[m.id] : m.target;
+                const pct = Math.min(count / target, 1);
+                const done = count >= target;
                 return (
                   <div key={m.id}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 3 }}>
@@ -434,7 +472,7 @@ function PastWeekCard({ week, lang }) {
                       </div>
                       <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
                         <span style={{ fontSize: 12, fontFamily: 'var(--mono)', color: done ? '#22c55e' : 'var(--text)', fontWeight: 700 }}>{count}</span>
-                        <span style={{ fontSize: 10, color: 'var(--text-mute)', fontFamily: 'var(--mono)' }}>/ {m.target}</span>
+                        <span style={{ fontSize: 10, color: 'var(--text-mute)', fontFamily: 'var(--mono)' }}>/ {target}</span>
                         {done && <span className="mw-chip" style={{ background: '#22c55e22', color: '#22c55e', fontSize: 9, padding: '2px 5px' }}>✓</span>}
                       </div>
                     </div>
@@ -455,10 +493,10 @@ function PastWeekCard({ week, lang }) {
 }
 
 // ────────────────────────── Progress ──────────────────────────
-function Progress({ history, splits, onBack }) {
+function Progress({ history, splits, onBack, volumeTargets }) {
   const lang = React.useContext(LangContext);
   const allWeeks = useMemo2(() => allWeeksByMuscle(history), [history]);
-  const pastWeeks = allWeeks.slice(1); // first is current week, shown via MuscleVolumePanel
+  const pastWeeks = allWeeks.slice(1);
 
   return (
     <div className="mw-fade-in" style={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
@@ -471,13 +509,13 @@ function Progress({ history, splits, onBack }) {
       </div>
 
       <div className="mw-scroll" style={{ flex: 1, padding: '16px' }}>
-        <MuscleVolumePanel history={history}/>
+        <MuscleVolumePanel history={history} volumeTargets={volumeTargets}/>
         {pastWeeks.length > 0 && (
           <>
             <div className="mw-eyebrow" style={{ marginBottom: 10 }}>
               {lang === 'ar' ? 'الأسابيع السابقة' : 'Past weeks'}
             </div>
-            {pastWeeks.map(w => <PastWeekCard key={w.key} week={w} lang={lang}/>)}
+            {pastWeeks.map(w => <PastWeekCard key={w.key} week={w} lang={lang} volumeTargets={volumeTargets}/>)}
           </>
         )}
       </div>
