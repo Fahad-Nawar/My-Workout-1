@@ -209,6 +209,27 @@ function exportHistoryToExcel(history, splits) {
 
   const ws = XLSX.utils.json_to_sheet(rows);
   if (merges.length) ws['!merges'] = merges;
+
+  const totalRows = rows.length + 1;
+  const headerStyle = { font: { bold: true, sz: 11 }, alignment: { horizontal: 'center', vertical: 'center' }, fill: { fgColor: { rgb: 'D9D9D9' } } };
+  const centerStyle = { alignment: { horizontal: 'center', vertical: 'center', wrapText: true } };
+
+  // Style header row
+  ['A1','B1','C1','D1','E1','F1'].forEach(ref => { if (ws[ref]) ws[ref].s = headerStyle; });
+
+  // Center Date (col A) and Split (col B) for all data rows
+  for (let r = 2; r <= totalRows; r++) {
+    if (ws[`A${r}`]) ws[`A${r}`].s = centerStyle;
+    if (ws[`B${r}`]) ws[`B${r}`].s = centerStyle;
+  }
+
+  // Column widths
+  ws['!cols'] = [{ wch: 22 }, { wch: 14 }, { wch: 24 }, { wch: 6 }, { wch: 12 }, { wch: 6 }];
+
+  // Page layout — A4, portrait, fit to 1 page wide
+  ws['!pageSetup'] = { paperSize: 9, orientation: 'portrait', fitToPage: true, fitToWidth: 1, fitToHeight: 0 };
+  ws['!margins'] = { left: 0.5, right: 0.5, top: 0.75, bottom: 0.75, header: 0.3, footer: 0.3 };
+
   const wb = XLSX.utils.book_new();
   XLSX.utils.book_append_sheet(wb, ws, 'Workout History');
   XLSX.writeFile(wb, 'workout-history.xlsx');
