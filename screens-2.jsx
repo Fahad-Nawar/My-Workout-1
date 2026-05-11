@@ -188,6 +188,7 @@ function exportHistoryToExcel(history, splits) {
     const splitName = splits[sess.day]?.name || sess.day;
     const sessionStart = rowIndex;
     sess.exercises.forEach(ex => {
+      const exStart = rowIndex;
       ex.sets?.forEach((set, i) => {
         rows.push({
           Date: sess.date,
@@ -199,6 +200,10 @@ function exportHistoryToExcel(history, splits) {
         });
         rowIndex++;
       });
+      const exEnd = rowIndex - 1;
+      if (exEnd > exStart) {
+        merges.push({ s: { r: exStart, c: 2 }, e: { r: exEnd, c: 2 } }); // Exercise
+      }
     });
     const sessionEnd = rowIndex - 1;
     if (sessionEnd > sessionStart) {
