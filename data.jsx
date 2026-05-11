@@ -237,6 +237,37 @@ function weekSetsByMuscle(history) {
   return counts;
 }
 
+function allWeeksByMuscle(history) {
+  const weeks = new Map();
+  history.forEach(sess => {
+    const d = parseDateStr(sess.date);
+    if (!d) return;
+    const daysSinceFriday = (d.getDay() - 5 + 7) % 7;
+    const friday = new Date(d);
+    friday.setDate(d.getDate() - daysSinceFriday);
+    friday.setHours(0, 0, 0, 0);
+    const thursday = new Date(friday);
+    thursday.setDate(friday.getDate() + 6);
+    const key = friday.toISOString().slice(0, 10);
+    if (!weeks.has(key)) {
+      const label = `${friday.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })} – ${thursday.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })}`;
+      const counts = {};
+      MUSCLES.forEach(m => { counts[m.id] = 0; });
+      weeks.set(key, { key, label, friday: friday.getTime(), counts, totalSets: 0 });
+    }
+    const week = weeks.get(key);
+    sess.exercises?.forEach(ex => {
+      const muscle = MUSCLE_MAP[ex.name];
+      const sets = ex.sets?.length || 0;
+      if (muscle && week.counts[muscle] !== undefined) {
+        week.counts[muscle] += sets;
+        week.totalSets += sets;
+      }
+    });
+  });
+  return [...weeks.values()].sort((a, b) => b.friday - a.friday);
+}
+
 // ────────────────────────── utils (shared across screens) ──────────────────────────
 function colorFromName(name) {
   const palette = ['#6366f1','#a855f7','#06b6d4','#10b981','#f59e0b','#ef4444','#ec4899','#8b5cf6'];
@@ -433,7 +464,7 @@ Object.assign(window, {
   authSignUp, authSignIn, authSignOut,
   fetchUserData, pushUserSplits, pushUserHistory, pushUserProfile, pushUserName, checkUsernameAvailable, uploadAvatar,
   todayStr, makeId, defaultUserSplits, seedDemoSession,
-  parseDateStr, weekSetsByMuscle,
+  parseDateStr, weekSetsByMuscle, allWeeksByMuscle,
   searchUsers, fetchFriendships, sendFriendRequest,
   respondToRequest, removeFriend, fetchFriendData,
 });

@@ -401,9 +401,65 @@ function MuscleVolumePanel({ history }) {
   );
 }
 
+// ────────────────────────── Past Week Card ──────────────────────────
+function PastWeekCard({ week, lang }) {
+  const [open, setOpen] = useState2(false);
+  const hasSets = week.totalSets > 0;
+  return (
+    <div className="mw-card" style={{ marginBottom: 10, padding: 0, overflow: 'hidden' }}>
+      <button onClick={() => setOpen(o => !o)} style={{ width: '100%', padding: '12px 14px', display: 'flex', alignItems: 'center', gap: 10 }}>
+        <div style={{ flex: 1, textAlign: 'left' }}>
+          <div style={{ fontWeight: 600, fontSize: 13 }}>{week.label}</div>
+          <div className="mw-mute" style={{ fontSize: 11 }}>
+            {lang === 'ar' ? `${week.totalSets} مجموعة` : `${week.totalSets} sets`}
+          </div>
+        </div>
+        <Icon name="chevron-down" size={14} color="var(--text-mute)" style={{ transform: open ? 'rotate(180deg)' : 'none', transition: 'transform .2s' }}/>
+      </button>
+      {open && (
+        <div style={{ padding: '0 14px 14px', borderTop: '1px solid var(--border)' }}>
+          {hasSets ? (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginTop: 10 }}>
+              {MUSCLES.map(m => {
+                const count = week.counts[m.id] || 0;
+                if (count === 0) return null;
+                const pct = Math.min(count / m.target, 1);
+                const done = count >= m.target;
+                return (
+                  <div key={m.id}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 3 }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                        <div style={{ width: 7, height: 7, borderRadius: '50%', background: done ? '#22c55e' : m.color, flexShrink: 0 }}/>
+                        <span style={{ fontSize: 12, fontWeight: 600 }}>{tr(m.label, lang)}</span>
+                      </div>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+                        <span style={{ fontSize: 12, fontFamily: 'var(--mono)', color: done ? '#22c55e' : 'var(--text)', fontWeight: 700 }}>{count}</span>
+                        <span style={{ fontSize: 10, color: 'var(--text-mute)', fontFamily: 'var(--mono)' }}>/ {m.target}</span>
+                        {done && <span className="mw-chip" style={{ background: '#22c55e22', color: '#22c55e', fontSize: 9, padding: '2px 5px' }}>✓</span>}
+                      </div>
+                    </div>
+                    <div style={{ height: 5, background: 'var(--border)', borderRadius: 3, overflow: 'hidden' }}>
+                      <div style={{ height: '100%', width: `${pct * 100}%`, background: done ? '#22c55e' : m.color, borderRadius: 3 }}/>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          ) : (
+            <div className="mw-mute" style={{ fontSize: 12, paddingTop: 10, textAlign: 'center' }}>No tracked sets this week</div>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+
 // ────────────────────────── Progress ──────────────────────────
 function Progress({ history, splits, onBack }) {
   const lang = React.useContext(LangContext);
+  const allWeeks = useMemo2(() => allWeeksByMuscle(history), [history]);
+  const pastWeeks = allWeeks.slice(1); // first is current week, shown via MuscleVolumePanel
+
   return (
     <div className="mw-fade-in" style={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
       <div style={{ padding: '12px 16px', display: 'flex', alignItems: 'center', gap: 10, borderBottom: '1px solid var(--border)' }}>
@@ -416,6 +472,14 @@ function Progress({ history, splits, onBack }) {
 
       <div className="mw-scroll" style={{ flex: 1, padding: '16px' }}>
         <MuscleVolumePanel history={history}/>
+        {pastWeeks.length > 0 && (
+          <>
+            <div className="mw-eyebrow" style={{ marginBottom: 10 }}>
+              {lang === 'ar' ? 'الأسابيع السابقة' : 'Past weeks'}
+            </div>
+            {pastWeeks.map(w => <PastWeekCard key={w.key} week={w} lang={lang}/>)}
+          </>
+        )}
       </div>
     </div>
   );
