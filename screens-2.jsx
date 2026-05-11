@@ -243,7 +243,7 @@ function exportHistoryToExcel(history, splits) {
   const exerciseStyle = {
     font: { bold: true, sz: 10 },
     fill: { fgColor: { rgb: 'F5F5F5' } },
-    alignment: { horizontal: 'left', vertical: 'center' },
+    alignment: { horizontal: 'center', vertical: 'center' },
     border,
   };
   const dataStyle = {
